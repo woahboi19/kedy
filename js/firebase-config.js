@@ -126,20 +126,35 @@ function getCurrentUserId() {
 async function loadUserNickname(uid) {
     try {
         console.log('Loading nickname for UID:', uid);
+        
+        // First try to get displayName from Auth (set in Firebase Console)
+        if (currentUser && currentUser.displayName) {
+            currentUserNickname = currentUser.displayName;
+            console.log('Nickname from Auth displayName:', currentUserNickname);
+            return currentUserNickname;
+        }
+        
+        // Then try to load from Realtime Database
         const snapshot = await usersRef.child(uid).once('value');
         const userData = snapshot.val();
-        console.log('User data from Firebase:', userData);
+        console.log('User data from Firebase DB:', userData);
+        
         if (userData && userData.nickname) {
             currentUserNickname = userData.nickname;
-            console.log('Nickname loaded:', currentUserNickname);
+            console.log('Nickname from Database:', currentUserNickname);
         } else {
-            currentUserNickname = null;
-            console.log('No nickname found, using email');
+            // Fallback to email prefix
+            currentUserNickname = currentUser.email.split('@')[0];
+            console.log('Using email prefix as nickname:', currentUserNickname);
         }
         return currentUserNickname;
     } catch (error) {
         console.error('Error loading nickname:', error);
-        return null;
+        // Fallback to email prefix on error
+        if (currentUser && currentUser.email) {
+            currentUserNickname = currentUser.email.split('@')[0];
+        }
+        return currentUserNickname;
     }
 }
 
