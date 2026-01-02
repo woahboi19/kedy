@@ -1,310 +1,260 @@
-# 📚 Öğrenci Takip Sistemi - Dokümantasyon
+# 🎓 Öğrenci Takip Sistemi (Student Analyzer)
 
-Hoş geldiniz! Bu sistem öğrenci sınav performanslarını takip etmek, analiz etmek ve raporlamak için tasarlanmıştır.
+**Modern, bulut tabanlı öğrenci performans takip ve analiz platformu**
+
+[![Live Demo](https://img.shields.io/badge/Demo-Live-brightgreen)](https://woahboi19.github.io/kedy/)
+[![Firebase](https://img.shields.io/badge/Backend-Firebase-orange)](https://firebase.google.com/)
+
+## ✨ Özellikler
+
+### 🔐 Kimlik Doğrulama & Yetkilendirme
+- **Firebase Authentication** ile güvenli giriş sistemi
+- **Kullanıcı takma adları** (nickname) desteği
+- **Rol tabanlı erişim**: Herkes görüntüleyebilir, sadece öğretmenler düzenleyebilir
+- Sınav yükleyen kişi bilgisi otomatik kaydedilir
+
+### ☁️ Bulut Senkronizasyonu
+- **Firebase Realtime Database** ile anlık veri senkronizasyonu
+- Tüm cihazlardan erişim
+- Offline çalışma desteği (localStorage yedekleme)
+- Otomatik veri yedekleme
+
+### 📊 Veri Yönetimi
+- Öğrenci sınav sonuçları girişi
+- Ders bazında detaylı analiz (Doğru/Yanlış/Boş)
+- Sınav notları ve yorum ekleme
+- Hedef belirleme ve takip
+- Toplu silme işlemleri
+
+### 📈 Görselleştirme & Raporlama
+- **4 farklı grafik türü**:
+  - 📉 Çizgi grafik (zaman bazlı gelişim)
+  - 🕸️ Radar grafik (ders bazlı performans)
+  - 📊 Bar grafik (sınav karşılaştırma)
+  - 🔥 Heatmap (konu bazlı analiz)
+- Dinamik filtreleme (öğrenci, ders, tarih)
+- Hızlı istatistikler ve özet kartlar
+
+### 💾 Veri Taşınabilirliği
+- JSON formatında veri dışa aktarma
+- JSON dosyasından veri içe aktarma
+- Test verisi yükleme özelliği (sadece lokal)
 
 ---
 
 ## 🚀 Hızlı Başlangıç
 
-### Yeni Başlayanlar İçin
-1. **[KULLANIM-KILAVUZU.md](KULLANIM-KILAVUZU.md)** - Başlangıç için en iyi seçim
-2. **test-data-yukle.html** dosyasını açın - Örnek verilerle başlayın
-3. **index.html** dosyasını açın - Uygulamayı kullanmaya başlayın
+### Canlı Demo
+Uygulamayı hemen kullanmaya başlayın: **[https://woahboi19.github.io/kedy/](https://woahboi19.github.io/kedy/)**
 
-### 5 Dakikada Başlayın
+### Test Verileri ile Başlama (Lokal)
+**Not:** Test verileri sadece localStorage'a kaydedilir, buluta yüklenmez.
+
+1. Yerel olarak `test-data-yukle.html` dosyasını açın
+2. Test verilerini yükleyin
+3. `index.html` dosyasını açın
+4. Verileri görüntüleyin (düzenleme için giriş gerekir)
+
+### Yetkili Kullanıcı Olarak Giriş
+1. Sağ üstteki **🔐 Giriş** butonuna tıklayın
+2. E-posta ve şifrenizi girin
+3. Artık sınav ekleyebilir ve düzenleyebilirsiniz
+
+---
+
+## 📖 Detaylı Dökümanlar
+
+### Türkçe
+- [📘 Hızlı Başlangıç](md-tr/HIZLI-BAŞLANGIÇ.md) - İlk adımlar ve kurulum
+- [📗 Kullanım Kılavuzu](md-tr/KULLANIM-KILAVUZU.md) - Tüm özellikler detaylı
+- [📙 Özet](md-tr/OZET.md) - Hızlı referans
+- [📕 Paylaşım Rehberi](md-tr/PAYLASIM-REHBERI.md) - GitHub Pages yayınlama
+
+### English
+- [📘 Quick Start](md-en/QUICK-START.md) - Getting started guide
+- [📗 Architecture](md-en/ARCHITECTURE.md) - Technical architecture
+- [📙 Summary](md-en/SUMMARY.md) - Feature overview
+- [📕 Optimization Notes](md-en/OPTIMIZATION-NOTES.md) - Performance tips
+- [✅ Testing Checklist](md-en/TESTING-CHECKLIST.md) - QA checklist
+
+---
+
+## 🛠️ Teknoloji Stack'i
+
+### Frontend
+- **HTML5** - Semantik yapı
+- **CSS3** - Modern, responsive tasarım
+- **JavaScript (ES6+)** - Modüler mimari
+- **Chart.js** - Dinamik grafikler
+
+### Backend & Database
+- **Firebase Authentication** - Kullanıcı yönetimi
+- **Firebase Realtime Database** - NoSQL bulut veritabanı
+- **localStorage API** - Offline yedekleme
+
+### Modüler Yapı
 ```
-1. test-data-yukle.html → Test verilerini yükleyin
-2. index.html → Uygulamayı açın  
-3. Panel sekmesi → Grafikleri görün
-4. Hedef belirleyin → İlk hedefinizi oluşturun
-5. Rapor yazdırın → İlk raporunuzu alın
-```
-
----
-
-## 📖 Dokümantasyon Rehberi
-
-### Türkçe Dokümantasyon (Öğretmenler İçin)
-
-#### 🎯 Temel Kullanım
-- **[KULLANIM-KILAVUZU.md](KULLANIM-KILAVUZU.md)** 📌 *İLK BURADAN BAŞLAYIN!*
-  - Temel özellikler
-  - Adım adım kullanım
-  - Sık sorulan sorular
-  - İpuçları ve püf noktaları
-
-#### ⚡ Hızlı Referans
-- **[HIZLI-BASLANGIÇ.md](HIZLI-BASLANGIÇ.md)**
-  - Hızlı kurulum
-  - Yeni özelliklerin listesi
-  - Sorun giderme
-  - Veri yedekleme
-
-#### 📊 Genel Bakış
-- **[OZET.md](OZET.md)**
-  - Neler değişti?
-  - Yeni özellikler özeti
-  - Dosya yapısı
-  - İstatistikler
-
----
-
-### English Documentation (For Developers)
-
-#### 🔧 Technical Documentation
-- **[README-MODULAR.md](README-MODULAR.md)**
-  - Complete technical details
-  - Module structure
-  - API reference
-  - Development guide
-
-#### 🏗️ Architecture
-- **[ARCHITECTURE.md](ARCHITECTURE.md)**
-  - System architecture diagrams
-  - Data flow
-  - Module dependencies
-  - Performance considerations
-
-#### ✅ Testing
-- **[TESTING-CHECKLIST.md](TESTING-CHECKLIST.md)**
-  - Comprehensive test list
-  - Feature verification
-  - Quality assurance
-  - Bug reporting
-
-#### 📝 Summary
-- **[SUMMARY.md](SUMMARY.md)**
-  - Change summary
-  - Before/after comparison
-  - Statistics
-  - Future enhancements
-
----
-
-## 🎓 Kimler İçin?
-
-### 👨‍🏫 Öğretmenler
-**Okumanız Gerekenler:**
-1. [KULLANIM-KILAVUZU.md](KULLANIM-KILAVUZU.md) - Ana kılavuz
-2. [HIZLI-BASLANGIÇ.md](HIZLI-BASLANGIÇ.md) - Hızlı başlangıç
-3. [OZET.md](OZET.md) - Yeni özellikler
-
-**Yapmanız Gerekenler:**
-- Test verilerini yükleyin
-- Uygulamayı deneyin
-- İlk sınavı girin
-- Rapor alın
-
-### 👨‍💻 Geliştiriciler
-**Okumanız Gerekenler:**
-1. [SUMMARY.md](SUMMARY.md) - Overview
-2. [README-MODULAR.md](README-MODULAR.md) - Technical docs
-3. [ARCHITECTURE.md](ARCHITECTURE.md) - System design
-4. [TESTING-CHECKLIST.md](TESTING-CHECKLIST.md) - Testing
-
-**Yapmanız Gerekenler:**
-- Kod yapısını inceleyin
-- Modülleri anlayın
-- Test listesini kullanın
-- Katkıda bulunun
-
----
-
-## 📂 Dosya Yapısı
-
-```
-student-analyzer/
-│
-├── 📄 HTML Dosyaları
-│   ├── index.html              ← Ana uygulama
-│   └── test-data-yukle.html    ← Test verisi yükleyici
-│
-├── 🎨 Stil
-│   └── style.css               ← Tüm stiller
-│
-├── ⚙️ JavaScript Modülleri
-│   ├── js/app-state.js         ← Durum yönetimi
-│   ├── js/app-data-entry.js    ← Veri girişi
-│   ├── js/app-entries.js       ← Kayıt listesi
-│   ├── js/app-dashboard.js     ← Panel ve grafikler
-│   ├── js/app-goals.js         ← Hedefler
-│   ├── js/app-reports.js       ← Raporlar
-│   ├── js/app-data.js          ← Veri yönetimi
-│   └── js/ocr-experimental.js  ← OCR (devre dışı)
-│
-├── 📊 Test Verileri
-│   └── test-data.json          ← Örnek veriler (JSON)
-│
-├── 📚 Türkçe Dokümantasyon (Öğretmenler)
-│   ├── KULLANIM-KILAVUZU.md    ← 🌟 ANA KILAVUZ
-│   ├── HIZLI-BASLANGIÇ.md      ← Hızlı başlangıç
-│   └── OZET.md                 ← Özet ve yenilikler
-│
-└── 📚 English Documentation (Developers)
-    ├── README-MODULAR.md       ← Technical guide
-    ├── ARCHITECTURE.md         ← Architecture
-    ├── TESTING-CHECKLIST.md    ← Testing
-    └── SUMMARY.md              ← Summary
+js/
+├── firebase-config.js      # Firebase entegrasyonu ve auth
+├── app-state.js           # Global state yönetimi
+├── app-data.js            # Veri işleme ve yardımcılar
+├── app-data-entry.js      # Form ve veri girişi
+├── app-entries.js         # Liste görünümü ve CRUD
+├── app-dashboard.js       # Dashboard ve filtreler
+├── app-reports.js         # Grafikler ve raporlar
+└── app-goals.js           # Hedef yönetimi
 ```
 
 ---
 
-## 🎯 Özellikler
+## 🔧 Kurulum (Kendi Sunucunuzda)
 
-### ✅ Temel Özellikler
-- 📝 Sınav sonuçlarını kaydetme
-- 📊 Grafik ve istatistikler
-- 👥 Birden fazla öğrenci takibi
-- 📈 Performans analizi
-- 🖨️ Profesyonel raporlar
+### 1. Depoyu Klonlayın
 
-### 🆕 Yeni Özellikler (v2.0)
-1. ⚡ Hızlı istatistik kartları
-2. 📅 Tarih aralığı filtreleme
-3. 🎯 Hedef belirleme ve takip
-4. ☑️ Toplu işlemler
-5. 🔍 Arama ve filtreleme
-6. 🖨️ Gelişmiş raporlar
-7. 📝 Sınav notları
-8. 🚨 Performans uyarıları
-9. 📋 Son sınavı kopyalama
-10. 💾 Gelişmiş veri yönetimi
-
----
-
-## 💻 Sistem Gereksinimleri
-
-### Minimum Gereksinimler
-- **Tarayıcı:** Chrome 90+, Firefox 88+, Edge 90+, Safari 14+
-- **İnternet:** Grafik kütüphanesi için gerekli
-- **Depolama:** 5-10 MB tarayıcı belleği
-
-### Desteklenen Cihazlar
-- 💻 Masaüstü bilgisayarlar
-- 📱 Akıllı telefonlar
-- 📱 Tabletler
-
-### Desteklenen İşletim Sistemleri
-- Windows 7+
-- macOS 10.12+
-- Linux (tüm dağıtımlar)
-- iOS 12+
-- Android 8+
-
----
-
-## 🚀 Kurulum
-
-### Adım 1: Dosyaları İndirin
-Tüm dosyaları bir klasöre çıkarın
-
-### Adım 2: Test Verilerini Yükleyin (İsteğe Bağlı)
-```
-test-data-yukle.html dosyasını açın
-→ "Test Verilerini Yükle" butonuna tıklayın
-→ Örnek veriler yüklenecektir
+```bash
+git clone https://github.com/woahboi19/kedy.git
+cd kedy
 ```
 
-### Adım 3: Uygulamayı Başlatın
+### 2. Firebase Projesi Oluşturun
+1. [Firebase Console](https://console.firebase.google.com/)'a gidin
+2. Yeni proje oluşturun
+3. **Authentication** → Email/Password'ü etkinleştirin
+4. **Realtime Database** oluşturun
+5. Database kurallarını ayarlayın:
+```json
+{
+  "rules": {
+    ".read": true,
+    "exams": {
+      ".write": "auth != null"
+    },
+    "goals": {
+      ".write": "auth != null"
+    },
+    "users": {
+      ".read": true,
+      ".write": false
+    }
+  }
+}
 ```
-index.html dosyasını çift tıklayın
-→ Tarayıcıda açılır
-→ Kullanmaya başlayın!
+
+### 3. Firebase Config'i Güncelleyin
+`js/firebase-config.js` dosyasını açın ve Firebase projenizin config'ini yapıştırın:
+```javascript
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+    projectId: "YOUR_PROJECT_ID",
+    // ...
+};
 ```
 
----
+### 4. Kullanıcı Oluşturun
+**Authentication** panelinden öğretmen kullanıcıları oluşturun.
 
-## 📞 Destek
+**Takma Ad Eklemek İçin** (3 yöntem):
 
-### Sorularınız mı Var?
-1. **[KULLANIM-KILAVUZU.md](KULLANIM-KILAVUZU.md)** - Sık sorulan sorular bölümüne bakın
-2. **Sorun Giderme** - Her dokümanda sorun giderme bölümü var
+#### Yöntem 1: Firebase Auth Display Name (En Kolay)
+- Authentication → Users → Kullanıcıyı seç → Edit user → Display name
 
-### Hata Bildirimi
-Hata bulursanız:
-- Hangi özellikte?
-- Ne yaptınız?
-- Ne bekliyordunuz?
-- Tarayıcı konsolu (F12) mesajı?
+#### Yöntem 2: Realtime Database
+- Database → Data sekmesi → users node'u oluştur:
+```json
+users/
+  USER_UID/
+    nickname: "Ahmet Hoca"
+```
 
----
+#### Yöntem 3: Otomatik (Fallback)
+- E-posta'nın @ işaretinden önceki kısım otomatik kullanılır
 
-## 🎓 Eğitim Kaynakları
+### 5. Yerel Sunucu Başlatın
 
-### Video Eğitimler (Planlı)
-- Temel kullanım
-- Panel kullanımı
-- Rapor hazırlama
-- Veri yönetimi
+```bash
+# Python ile
+python -m http.server 8000
 
-### Örnek Senaryolar
-Tüm dokümantasyonda gerçek kullanım senaryoları bulunur
+# Node.js ile
+npx http-server
+```
 
----
-
-## 📊 İstatistikler
-
-### Kod Metrikleri
-- 8 modüler JavaScript dosyası
-- ~1331 satır kod
-- 200+ satır CSS
-- 18 özellik
-
-### Dokümantasyon
-- 8 dokümantasyon dosyası
-- Türkçe ve İngilizce
-- 2000+ satır dokümantasyon
+Tarayıcıda açın: `http://localhost:8000`
 
 ---
 
-## 🌟 Katkıda Bulunanlar
+## 👥 Kullanım Senaryoları
 
-**Versiyon 2.0 Özellikleri:**
-- Modüler yapı
-- 10 yeni özellik
-- Kapsamlı dokümantasyon
-- Test verileri
-- Türkçe yerelleştirme
+### Öğretmenler İçin
+✅ Öğrenci sınav sonuçlarını ekleyin
+✅ Hedefler belirleyin ve takip edin
+✅ Grafik ve raporlarla ilerlemeyi analiz edin
+✅ Notlar ekleyerek öğrencileri değerlendirin
 
----
+### Veliler İçin
+✅ Çocuklarının sınav sonuçlarını görüntüleyin
+✅ Ders bazında performansı inceleyin
+✅ Zaman içindeki gelişimi takip edin
 
-## 📝 Sürüm Geçmişi
-
-### v2.0.0 (Ocak 2026)
-- ✅ Modüler yapıya geçiş
-- ✅ 10 yeni özellik eklendi
-- ✅ Kapsamlı dokümantasyon
-- ✅ Test verileri oluşturuldu
-- ✅ Performans iyileştirmeleri
-
-### v1.0.0 (Önceki)
-- Temel sınav takip sistemi
-- Grafik görüntüleme
-- Basit raporlama
+### Öğrenciler İçin
+✅ Kendi performanslarını görüntüleyin
+✅ Hangi konularda eksik olduklarını keşfedin
+✅ Hedeflere ulaşma durumunu takip edin
 
 ---
 
-## ⚖️ Lisans
+## 🔒 Güvenlik
 
-MIT License - Özgürce kullanabilir, değiştirebilir ve dağıtabilirsiniz.
-
----
-
-## 🎉 Başlayın!
-
-**Öğretmenseniz:**
-→ [KULLANIM-KILAVUZU.md](KULLANIM-KILAVUZU.md) ile başlayın!
-
-**Geliştiriciyseniz:**
-→ [README-MODULAR.md](README-MODULAR.md) ile başlayın!
-
-**Hızlı denemek istiyorsanız:**
-→ test-data-yukle.html ile örnek verileri yükleyin!
+- ✅ **Firebase Authentication** ile güvenli giriş
+- ✅ **Rol tabanlı erişim kontrolü** (Public read, Auth write)
+- ✅ **Database güvenlik kuralları**
+- ✅ **API key'ler güvenli** (Firebase API key'leri public olabilir)
+- ✅ **HTTPS** ile şifreli bağlantı
 
 ---
 
-**Başarılar dileriz! 📚🎓**
+## 📱 Tarayıcı Desteği
 
-*Son Güncelleme: Ocak 2026*  
-*Versiyon: 2.0.0*  
-*Dil: Türkçe / English*
+- ✅ Chrome 90+
+- ✅ Firefox 88+
+- ✅ Safari 14+
+- ✅ Edge 90+
+- ✅ Mobile browsers (iOS Safari, Chrome Mobile)
+
+---
+
+## 🤝 Katkıda Bulunma
+
+Katkılarınızı bekliyoruz! Lütfen:
+1. Repo'yu fork edin
+2. Feature branch oluşturun (`git checkout -b feature/AmazingFeature`)
+3. Değişikliklerinizi commit edin (`git commit -m 'Add some AmazingFeature'`)
+4. Branch'inizi push edin (`git push origin feature/AmazingFeature`)
+5. Pull Request açın
+
+---
+
+## 📄 Lisans
+
+Bu proje MIT lisansı altında lisanslanmıştır.
+
+---
+
+## 🐛 Sorun Bildirimi
+
+Bir sorunla karşılaştınız mı? [Issues](https://github.com/woahboi19/kedy/issues) sayfasından bize bildirin.
+
+---
+
+## 📞 İletişim
+
+- **GitHub**: [@woahboi19](https://github.com/woahboi19)
+- **Proje**: [kedy](https://github.com/woahboi19/kedy)
+
+---
+
+<div align="center">
+  <sub>Built with ❤️ using Firebase & Vanilla JS</sub>
+</div>
