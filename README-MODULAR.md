@@ -1,6 +1,4 @@
-# 📦 Mod
-
-üler Mimari Dokümantasyonu
+# 📦 Modüler Mimari Dokümantasyonu
 
 ## 🏗️ Proje Yapısı
 
