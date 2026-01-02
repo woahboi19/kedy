@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Öğrenci Takip Sistemi</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- OCR Libraries (experimental) -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        // Make sure PDF.js worker is set before anything else
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+    </script>
+</head>
+<body>
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="auth-modal">
+        <div class="auth-modal-content">
+            <button class="auth-modal-close" onclick="closeAuthModal()">&times;</button>
+            <h2 id="auth-modal-title">🔐 Giriş Yap</h2>
+            
+            <!-- Login Section -->
+            <div id="auth-login-section">
+                <form onsubmit="handleAuthSubmit(event, 'login')">
+                    <div class="form-group">
+                        <label for="auth-email">E-posta</label>
+                        <input type="email" id="auth-email" required placeholder="ornek@okul.edu.tr">
+                    </div>
+                    <div class="form-group">
+                        <label for="auth-password">Şifre</label>
+                        <input type="password" id="auth-password" required placeholder="Şifreniz" minlength="6">
+                    </div>
+                    <button type="submit" class="primary-btn auth-submit-btn">Giriş Yap</button>
+                </form>
+                <p class="auth-switch">
+                    Hesabınız yok mu? <a href="#" onclick="switchAuthMode('register'); return false;">Kayıt Ol</a>
+                </p>
+            </div>
+            
+            <!-- Register Section -->
+            <div id="auth-register-section" style="display: none;">
+                <form onsubmit="handleAuthSubmit(event, 'register')">
+                    <div class="form-group">
+                        <label for="auth-email">E-posta</label>
+                        <input type="email" id="auth-email" required placeholder="ornek@okul.edu.tr">
+                    </div>
+                    <div class="form-group">
+                        <label for="auth-password">Şifre</label>
+                        <input type="password" id="auth-password" required placeholder="En az 6 karakter" minlength="6">
+                    </div>
+                    <button type="submit" class="primary-btn auth-submit-btn">Kayıt Ol</button>
+                </form>
+                <p class="auth-switch">
+                    Zaten hesabınız var mı? <a href="#" onclick="switchAuthMode('login'); return false;">Giriş Yap</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>Öğrenci Takip Sistemi</h1>
+            
+            <!-- Auth UI -->
+            <div class="auth-container">
+                <div id="auth-status" class="auth-status auth-status-logged-out" title="Giriş yapılmadı"></div>
+                <span id="auth-user-email" class="auth-user-email" style="display: none;"></span>
+                <button id="auth-login-btn" onclick="openAuthModal()" class="auth-btn">🔐 Giriş</button>
+                <button id="auth-logout-btn" onclick="logout()" class="auth-btn auth-logout" style="display: none;">Çıkış</button>
+            </div>
+            
+            <nav>
+                <button id="tab-entry" class="active" onclick="switchTab('entry')">Veri Girişi</button>
+                <button id="tab-dashboard" onclick="switchTab('dashboard')">Panel</button>
+            </nav>
+        </header>
+
+        <!-- Data Entry Section -->
+        <section id="section-entry" class="active">
+            <!-- Quick Stats Cards -->
+            <div class="quick-stats-grid">
+                <div class="quick-stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="quick-students">0</div>
+                        <div class="stat-label">Toplam Öğrenci</div>
+                    </div>
+                </div>
+                <div class="quick-stat-card">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="quick-exams">0</div>
+                        <div class="stat-label">Toplam Sınav</div>
+                    </div>
+                </div>
+                <div class="quick-stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="quick-avg">0%</div>
+                        <div class="stat-label">Ortalama Başarı</div>
+                    </div>
+                </div>
+                <div class="quick-stat-card">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="quick-trend">-</div>
+                        <div class="stat-label">Eğilim</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OCR Upload Section (EXPERIMENTAL - Hidden by default) -->
+            <div class="card" id="ocr-section" style="display: none;">
+                <div class="feature-badge">⚠️ Deneysel Özellik</div>
+                <h2>📤 Dosyadan Yükle (OCR)</h2>
+                <div class="upload-section">
+                    <input type="file" id="file-upload" accept=".pdf,.png,.jpg,.jpeg" onchange="handleFileUpload(event)">
+                    <button type="button" onclick="document.getElementById('file-upload').click()" class="upload-btn">
+                        📄 Sınav Sonucu Dosyası Seç (PDF/Resim)
+                    </button>
+                </div>
+                <div id="ocr-results"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>✏️ Sınav Sonucu Ekle</h2>
+                    <button type="button" onclick="copyLastExam()" class="secondary-btn-small" title="Son sınavın şablonunu kullan">
+                        📋 Son Sınavı Kopyala
+                    </button>
+                </div>
+                <form id="exam-form">
+                    <div class="form-group">
+                        <label for="gradeLevel">Sınav Türü</label>
+                        <select id="gradeLevel" required>
+                            <option value="">Seçiniz...</option>
+                            <option value="Lise Hazırlık">Lise Hazırlık</option>
+                            <option value="Üniversite Hazırlık - TYT">Üniversite Hazırlık - TYT</option>
+                            <option value="Üniversite Hazırlık - AYT">Üniversite Hazırlık - AYT</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="studentName">Öğrenci Adı</label>
+                        <input type="text" id="studentName" required placeholder="örn. Ali Yılmaz">
+                    </div>
+                    <div class="form-group">
+                        <label for="examName">Sınav Adı</label>
+                        <input type="text" id="examName" required placeholder="örn. Deneme #1">
+                    </div>
+                    <div class="form-group">
+                        <label for="examDate">Tarih</label>
+                        <input type="date" id="examDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="examNotes">Notlar (Opsiyonel)</label>
+                        <textarea id="examNotes" rows="2" placeholder="Sınav hakkında notlarınız..."></textarea>
+                    </div>
+
+                    <div id="subjects-container">
+                        <h3>Dersler</h3>
+                        <!-- Subject rows will be added here dynamically -->
+                    </div>
+
+                    <datalist id="lesson-options">
+                        <!-- Will be populated by JavaScript -->
+                    </datalist>
+
+                    <button type="button" id="add-subject-btn" onclick="addSubjectRow()" class="secondary-btn">+ Ders Ekle</button>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="primary-btn" id="submit-btn">Sonucu Kaydet</button>
+                        <button type="button" class="secondary-btn" id="cancel-edit-btn" onclick="cancelEdit()" style="display: none;">İptal Et</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Son Kayıtlar</h2>
+                    <div class="data-actions">
+                        <input type="text" id="entry-search" placeholder="🔍 Öğrenci veya sınav adı..." oninput="filterEntries()" class="search-input">
+                        <button onclick="toggleBulkMode()" class="icon-btn" title="Toplu Silme">☑️</button>
+                        <button onclick="exportData()" class="icon-btn" title="Verileri İndir">💾</button>
+                        <label class="icon-btn" title="Verileri Yükle">
+                            📁
+                            <input type="file" accept=".json" onchange="importData(event)" style="display:none;">
+                        </label>
+                    </div>
+                </div>
+                
+                <div id="bulk-actions" class="bulk-actions" style="display: none;">
+                    <p><span id="selected-count">0</span> kayıt seçildi</p>
+                    <button onclick="deleteSelected()" class="danger-btn">🗑️ Seçilenleri Sil</button>
+                    <button onclick="toggleBulkMode()" class="secondary-btn-small">İptal</button>
+                </div>
+                
+                <div id="entries-list">
+                    <!-- List of added exams will appear here -->
+                    <p class="empty-state">Henüz kayıtlı sınav yok.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard Section -->
+        <section id="section-dashboard" style="display: none;">
+            <!-- Performance Alerts -->
+            <div id="performance-alerts"></div>
+
+            <!-- Filters -->
+            <div class="controls">
+                <div class="form-group">
+                    <label for="filterGrade">Sınav Türü</label>
+                    <select id="filterGrade" onchange="updateGradeFilter()">
+                        <option value="Lise Hazırlık">Lise Hazırlık</option>
+                        <option value="Üniversite Hazırlık - TYT">Üniversite Hazırlık - TYT</option>
+                        <option value="Üniversite Hazırlık - AYT">Üniversite Hazırlık - AYT</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filterStudent">Öğrenci</label>
+                    <select id="filterStudent" onchange="updateDashboard()">
+                        <option value="all">Tüm Öğrenciler</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filterSubject">Ders</label>
+                    <select id="filterSubject" onchange="updateDashboard()">
+                        <option value="overall">Genel Başarı</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="dateRange">Zaman Aralığı</label>
+                    <select id="dateRange" onchange="handleDateRangeChange()">
+                        <option value="all">Tüm Zamanlar</option>
+                        <option value="7">Son 7 Gün</option>
+                        <option value="30">Son 30 Gün</option>
+                        <option value="90">Son 90 Gün</option>
+                        <option value="custom">Özel Aralık</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Custom Date Range -->
+            <div id="custom-date-range" class="custom-date-range" style="display: none;">
+                <div class="form-group">
+                    <label for="startDate">Başlangıç</label>
+                    <input type="date" id="startDate" onchange="updateDashboard()">
+                </div>
+                <div class="form-group">
+                    <label for="endDate">Bitiş</label>
+                    <input type="date" id="endDate" onchange="updateDashboard()">
+                </div>
+            </div>
+
+            <!-- Visualization Tabs -->
+            <div class="viz-tabs">
+                <button class="viz-tab active" onclick="switchViz('line')" id="viz-line">📈 Zaman Grafiği</button>
+                <button class="viz-tab" onclick="switchViz('radar')" id="viz-radar">🎯 Radar Grafiği</button>
+                <button class="viz-tab" onclick="switchViz('bar')" id="viz-bar">📊 Karşılaştırma</button>
+                <button class="viz-tab" onclick="switchViz('heatmap')" id="viz-heatmap">🔥 Isı Haritası</button>
+            </div>
+
+            <!-- Charts -->
+            <div class="chart-container" id="chart-line">
+                <canvas id="performanceChart"></canvas>
+            </div>
+            
+            <div class="chart-container" id="chart-radar" style="display: none;">
+                <canvas id="radarChart"></canvas>
+            </div>
+            
+            <div class="chart-container" id="chart-bar" style="display: none;">
+                <canvas id="barChart"></canvas>
+            </div>
+            
+            <div class="chart-container" id="chart-heatmap" style="display: none;">
+                <div id="heatmapGrid"></div>
+            </div>
+            
+            <!-- Stats -->
+            <div id="stats-summary" class="stats-grid">
+                <!-- Stats will go here -->
+            </div>
+            
+            <!-- Subject Comparison -->
+            <div class="card">
+                <div id="subject-comparison">
+                    <!-- Subject comparison will go here -->
+                </div>
+            </div>
+
+            <!-- Goals Section -->
+            <div class="card goals-section">
+                <h2>🎯 Hedef Belirleme</h2>
+                <div class="goal-form">
+                    <div class="form-group">
+                        <label for="goal-student">Öğrenci</label>
+                        <select id="goal-student">
+                            <option value="">Öğrenci Seç...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="goal-subject">Ders</label>
+                        <select id="goal-subject">
+                            <option value="">Ders Seç...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="goal-percentage">Hedef (%)</label>
+                        <input type="number" id="goal-percentage" min="0" max="100" placeholder="80">
+                    </div>
+                    <button onclick="setGoal()" class="primary-btn">Hedef Belirle</button>
+                </div>
+                <div id="goals-list" class="goals-list">
+                    <p class="empty-state">Henüz hedef belirlenmedi.</p>
+                </div>
+            </div>
+
+            <!-- Reports & Data Management -->
+            <div class="card">
+                <h2>📄 Raporlar ve Veri Yönetimi</h2>
+                <div class="report-actions">
+                    <button onclick="printReport()" class="secondary-btn">🖨️ Rapor Yazdır</button>
+                    <button onclick="exportData()" class="secondary-btn">💾 Sınav Verilerini İndir</button>
+                    <button onclick="exportGoals()" class="secondary-btn">🎯 Hedefleri İndir</button>
+                    <label class="secondary-btn write-action">
+                        📁 Sınav Verilerini Yükle
+                        <input type="file" accept=".json" onchange="importData(event)" style="display:none;">
+                    </label>
+                    <label class="secondary-btn write-action">
+                        🎯 Hedefleri Yükle
+                        <input type="file" accept=".json" onchange="importGoals(event)" style="display:none;">
+                    </label>
+                    <button onclick="syncLocalToFirebase()" class="secondary-btn write-action" title="Yerel verileri buluta yükle">☁️ Buluta Yükle</button>
+                    <button onclick="clearAllData()" class="danger-btn write-action">🗑️ Tüm Verileri Temizle</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Load all modular scripts in order -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/app-state.js"></script>
+    <script src="js/app-data-entry.js"></script>
+    <script src="js/app-entries.js"></script>
+    <script src="js/app-dashboard.js"></script>
+    <script src="js/app-goals.js"></script>
+    <script src="js/app-reports.js"></script>
+    <script src="js/app-data.js"></script>
+    <script src="js/ocr-experimental.js"></script>
+</body>
+</html>

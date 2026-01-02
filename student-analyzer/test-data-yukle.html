@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Verisi Yükle</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .info {
+            background: #f0f7ff;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .info h3 {
+            margin-top: 0;
+            color: #667eea;
+        }
+        .info ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .info li {
+            margin: 5px 0;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            display: none;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 0;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .secondary-btn {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+        .secondary-btn:hover {
+            background: #f0f7ff;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 Test Verisi Yükleyici</h1>
+        <p class="subtitle">Öğrenci Takip Sistemi için örnek veriler</p>
+
+        <div class="info">
+            <h3>📊 Yüklenecek Veriler:</h3>
+            <ul>
+                <li><strong>6 Öğrenci:</strong> Ayşe Yılmaz, Mehmet Demir, Zeynep Kaya, Ali Özkan, Fatma Şahin, Can Yıldız</li>
+                <li><strong>12 Sınav:</strong> Farklı tarihler ve sınav türleri</li>
+                <li><strong>3 Sınav Türü:</strong> Lise Hazırlık, TYT, AYT</li>
+                <li><strong>4 Hedef:</strong> Çeşitli dersler için hedefler</li>
+                <li><strong>Notlar:</strong> Bazı sınavlarda öğretmen notları</li>
+            </ul>
+        </div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-label">Öğrenci</div>
+                <div class="stat-value">6</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Sınav</div>
+                <div class="stat-value">12</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Hedef</div>
+                <div class="stat-value">4</div>
+            </div>
+        </div>
+
+        <div class="warning">
+            ⚠️ <strong>Uyarı:</strong> Bu işlem mevcut verilerinize test verilerini ekleyecektir. Eğer temiz bir başlangıç istiyorsanız, önce mevcut verileri silin.
+        </div>
+
+        <button id="loadBtn" onclick="loadTestData()">📥 Test Verilerini Yükle</button>
+        <button class="secondary-btn" onclick="clearAndLoad()">🗑️ Önce Sil, Sonra Yükle</button>
+        <button class="secondary-btn" onclick="goToApp()">🚀 Uygulamayı Aç</button>
+
+        <div id="successMsg" class="success">
+            ✅ <strong>Başarılı!</strong> Test verileri yüklendi. Şimdi uygulamayı açabilirsiniz.
+        </div>
+    </div>
+
+    <script>
+        const testData = {
+            "exams": [
+                {
+                    "studentName": "Ayşe Yılmaz",
+                    "examName": "Deneme 1",
+                    "date": "2025-12-15",
+                    "gradeLevel": "Lise Hazırlık",
+                    "notes": "İyi bir performans, Matematik'te ilerleme var",
+                    "subjects": [
+                        {"lesson": "Türkçe", "correct": 18, "wrong": 4, "empty": 3, "total": 25},
+                        {"lesson": "Matematik", "correct": 22, "wrong": 5, "empty": 3, "total": 30},
+                        {"lesson": "Fen", "correct": 16, "wrong": 2, "empty": 2, "total": 20},
+                        {"lesson": "Sosyal", "correct": 14, "wrong": 4, "empty": 2, "total": 20}
+                    ]
+                },
+                {
+                    "studentName": "Ayşe Yılmaz",
+                    "examName": "Deneme 2",
+                    "date": "2025-12-22",
+                    "gradeLevel": "Lise Hazırlık",
+                    "notes": "Devam eden gelişim",
+                    "subjects": [
+                        {"lesson": "Türkçe", "correct": 20, "wrong": 3, "empty": 2, "total": 25},
+                        {"lesson": "Matematik", "correct": 24, "wrong": 4, "empty": 2, "total": 30},
+                        {"lesson": "Fen", "correct": 17, "wrong": 2, "empty": 1, "total": 20},
+                        {"lesson": "Sosyal", "correct": 16, "wrong": 3, "empty": 1, "total": 20}
+                    ]
+                },
+                {
+                    "studentName": "Mehmet Demir",
+                    "examName": "Deneme 1",
+                    "date": "2025-12-15",
+                    "gradeLevel": "Lise Hazırlık",
+                    "notes": "İngilizce'ye daha fazla çalışmalı",
+                    "subjects": [
+                        {"lesson": "Türkçe", "correct": 15, "wrong": 6, "empty": 4, "total": 25},
+                        {"lesson": "Matematik", "correct": 20, "wrong": 7, "empty": 3, "total": 30},
+                        {"lesson": "Fen", "correct": 13, "wrong": 5, "empty": 2, "total": 20},
+                        {"lesson": "İngilizce", "correct": 8, "wrong": 8, "empty": 4, "total": 20}
+                    ]
+                },
+                {
+                    "studentName": "Mehmet Demir",
+                    "examName": "Deneme 2",
+                    "date": "2025-12-22",
+                    "gradeLevel": "Lise Hazırlık",
+                    "subjects": [
+                        {"lesson": "Türkçe", "correct": 16, "wrong": 5, "empty": 4, "total": 25},
+                        {"lesson": "Matematik", "correct": 18, "wrong": 8, "empty": 4, "total": 30},
+                        {"lesson": "Fen", "correct": 12, "wrong": 6, "empty": 2, "total": 20},
+                        {"lesson": "İngilizce", "correct": 10, "wrong": 7, "empty": 3, "total": 20}
+                    ]
+                },
+                {
+                    "studentName": "Zeynep Kaya",
+                    "examName": "TYT Deneme 1",
+                    "date": "2025-12-18",
+                    "gradeLevel": "Üniversite Hazırlık - TYT",
+                    "notes": "Çok başarılı, tüm alanlarda güçlü",
+                    "subjects": [
+                        {"lesson": "Türkçe", "correct": 35, "wrong": 4, "empty": 1, "total": 40},
+                        {"lesson": "Matematik", "correct": 32, "wrong": 5, "empty": 3, "total": 40},
+                        {"lesson": "Fen", "correct": 16, "wrong": 3, "empty": 1, "total": 20},
+                        {"lesson": "Sosyal", "correct": 18, "wrong": 2, "empty": 0, "total": 20}
+                    ]
+                },
+                {
+                    "studentName": "Zeynep Kaya",
+                    "examName": "TYT Deneme 2",
+                    "date": "2025-12-28",
+                    "gradeLevel": "Üniversite Hazırlık - TYT",
+                    "notes": "Mükemmel gelişim!",
+                    "subjects": [
+                        {"lesson": "Türkçe", "correct": 37, "wrong": 2, "empty": 1, "total": 40},
+                        {"lesson": "Matematik", "correct": 34, "wrong": 4, "empty": 2, "total": 40},
+                        {"lesson": "Fen", "correct": 17, "wrong": 2, "empty": 1, "total": 20},
+                        {"lesson": "Sosyal", "correct": 19, "wrong": 1, "empty": 0, "total": 20}
+                    ]
+                },
+                {
+                    "studentName": "Ali Özkan",
+                    "examName": "TYT Deneme 1",
+                    "date": "2025-12-18",
+                    "gradeLevel": "Üniversite Hazırlık - TYT",
+                    "subjects": [
+                        {"lesson": "Türkçe", "correct": 25, "wrong": 10, "empty": 5, "total": 40},
+                        {"lesson": "Matematik", "correct": 22, "wrong": 12, "empty": 6, "total": 40},
+                        {"lesson": "Fen", "correct": 12, "wrong": 6, "empty": 2, "total": 20},
+                        {"lesson": "Sosyal", "correct": 13, "wrong": 5, "empty": 2, "total": 20}
+                    ]
+                },
+                {
+                    "studentName": "Ali Özkan",
+                    "examName": "TYT Deneme 2",
+                    "date": "2025-12-28",
+                    "gradeLevel": "Üniversite Hazırlık - TYT",
+                    "notes": "Son sınavda düşüş var, motivasyon sorunu olabilir",
+                    "subjects": [
+                        {"lesson": "Türkçe", "correct": 22, "wrong": 12, "empty": 6, "total": 40},
+                        {"lesson": "Matematik", "correct": 19, "wrong": 14, "empty": 7, "total": 40},
+                        {"lesson": "Fen", "correct": 10, "wrong": 7, "empty": 3, "total": 20},
+                        {"lesson": "Sosyal", "correct": 11, "wrong": 7, "empty": 2, "total": 20}
+                    ]
+                },
+                {
+                    "studentName": "Fatma Şahin",
+                    "examName": "AYT Deneme 1",
+                    "date": "2025-12-20",
+                    "gradeLevel": "Üniversite Hazırlık - AYT",
+                    "subjects": [
+                        {"lesson": "Matematik", "correct": 28, "wrong": 8, "empty": 4, "total": 40},
+                        {"lesson": "Fizik", "correct": 11, "wrong": 3, "empty": 0, "total": 14},
+                        {"lesson": "Kimya", "correct": 10, "wrong": 3, "empty": 0, "total": 13},
+                        {"lesson": "Biyoloji", "correct": 11, "wrong": 2, "empty": 0, "total": 13}
+                    ]
+                },
+                {
+                    "studentName": "Fatma Şahin",
+                    "examName": "AYT Deneme 2",
+                    "date": "2026-01-02",
+                    "gradeLevel": "Üniversite Hazırlık - AYT",
+                    "notes": "Fizik'te önemli gelişme",
+                    "subjects": [
+                        {"lesson": "Matematik", "correct": 30, "wrong": 7, "empty": 3, "total": 40},
+                        {"lesson": "Fizik", "correct": 12, "wrong": 2, "empty": 0, "total": 14},
+                        {"lesson": "Kimya", "correct": 11, "wrong": 2, "empty": 0, "total": 13},
+                        {"lesson": "Biyoloji", "correct": 12, "wrong": 1, "empty": 0, "total": 13}
+                    ]
+                },
+                {
+                    "studentName": "Can Yıldız",
+                    "examName": "AYT Deneme 1",
+                    "date": "2025-12-20",
+                    "gradeLevel": "Üniversite Hazırlık - AYT",
+                    "notes": "Edebiyat ağırlıklı öğrenci",
+                    "subjects": [
+                        {"lesson": "Türkçe", "correct": 22, "wrong": 2, "empty": 0, "total": 24},
+                        {"lesson": "Tarih", "correct": 8, "wrong": 2, "empty": 0, "total": 10},
+                        {"lesson": "Coğrafya", "correct": 5, "wrong": 0, "empty": 1, "total": 6},
+                        {"lesson": "Felsefe", "correct": 10, "wrong": 2, "empty": 0, "total": 12}
+                    ]
+                },
+                {
+                    "studentName": "Can Yıldız",
+                    "examName": "AYT Deneme 2",
+                    "date": "2026-01-02",
+                    "gradeLevel": "Üniversite Hazırlık - AYT",
+                    "subjects": [
+                        {"lesson": "Türkçe", "correct": 23, "wrong": 1, "empty": 0, "total": 24},
+                        {"lesson": "Tarih", "correct": 9, "wrong": 1, "empty": 0, "total": 10},
+                        {"lesson": "Coğrafya", "correct": 6, "wrong": 0, "empty": 0, "total": 6},
+                        {"lesson": "Felsefe", "correct": 11, "wrong": 1, "empty": 0, "total": 12}
+                    ]
+                }
+            ],
+            "goals": {
+                "Ayşe Yılmaz-Matematik": {
+                    "student": "Ayşe Yılmaz",
+                    "subject": "Matematik",
+                    "target": 85
+                },
+                "Mehmet Demir-İngilizce": {
+                    "student": "Mehmet Demir",
+                    "subject": "İngilizce",
+                    "target": 60
+                },
+                "Zeynep Kaya-Matematik": {
+                    "student": "Zeynep Kaya",
+                    "subject": "Matematik",
+                    "target": 90
+                },
+                "Ali Özkan-Türkçe": {
+                    "student": "Ali Özkan",
+                    "subject": "Türkçe",
+                    "target": 70
+                }
+            }
+        };
+
+        function loadTestData() {
+            try {
+                // Load existing data
+                const existingExams = JSON.parse(localStorage.getItem('studentExams') || '[]');
+                const existingGoals = JSON.parse(localStorage.getItem('studentGoals') || '{}');
+
+                // Merge with test data
+                const mergedExams = [...existingExams, ...testData.exams];
+                const mergedGoals = {...existingGoals, ...testData.goals};
+
+                // Save to localStorage
+                localStorage.setItem('studentExams', JSON.stringify(mergedExams));
+                localStorage.setItem('studentGoals', JSON.stringify(mergedGoals));
+
+                // Show success message
+                document.getElementById('successMsg').style.display = 'block';
+                document.getElementById('loadBtn').disabled = true;
+                document.getElementById('loadBtn').textContent = '✅ Yüklendi!';
+
+                console.log('Test verileri başarıyla yüklendi!');
+            } catch (error) {
+                alert('❌ Hata: ' + error.message);
+            }
+        }
+
+        function clearAndLoad() {
+            if (confirm('⚠️ Mevcut tüm veriler silinecek ve test verileri yüklenecek. Emin misiniz?')) {
+                // Clear existing data
+                localStorage.removeItem('studentExams');
+                localStorage.removeItem('studentGoals');
+
+                // Load test data
+                loadTestData();
+            }
+        }
+
+        function goToApp() {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
