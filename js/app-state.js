@@ -85,7 +85,7 @@ function setupEventListeners() {
     const cancelEditBtn = document.getElementById('cancel-edit-btn');
     const dateRange = document.getElementById('dateRange');
     
-    if (addSubjectBtn) addSubjectBtn.addEventListener('click', addSubjectRow);
+    // Note: addSubjectBtn uses onclick in HTML, no need for addEventListener
     if (examForm) examForm.addEventListener('submit', handleFormSubmit);
     if (filterGrade) filterGrade.addEventListener('change', updateGradeFilter);
     if (filterStudent) filterStudent.addEventListener('change', updateDashboard);

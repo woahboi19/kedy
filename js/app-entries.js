@@ -137,19 +137,19 @@ function editExam(examId) {
             </div>
             <div>
                 <label>Soru</label>
-                <input type="number" name="total" min="1" required value="${subject.total}" onchange="calculateEmpty('${rowId}')">
+                <input type="number" name="total" min="0" value="${subject.total || 0}" onchange="calculateEmpty('${rowId}')" oninput="calculateEmpty('${rowId}')">
             </div>
             <div>
                 <label>Doğru</label>
-                <input type="number" name="correct" min="0" required value="${subject.correct}" onchange="calculateEmpty('${rowId}')">
+                <input type="number" name="correct" min="0" value="${subject.correct || 0}" onchange="calculateEmpty('${rowId}')" oninput="calculateEmpty('${rowId}')">
             </div>
             <div>
                 <label>Yanlış</label>
-                <input type="number" name="wrong" min="0" required value="${subject.wrong}" onchange="calculateEmpty('${rowId}')">
+                <input type="number" name="wrong" min="0" value="${subject.wrong || 0}" onchange="calculateEmpty('${rowId}')" oninput="calculateEmpty('${rowId}')">
             </div>
             <div>
                 <label>Boş</label>
-                <input type="number" name="empty" id="empty-${rowId}" value="${subject.empty}" readonly style="background-color: #eee;">
+                <input type="number" name="empty" id="empty-${rowId}" value="${subject.empty || 0}" readonly style="background-color: #eee;">
             </div>
             <button type="button" class="remove-btn" onclick="this.parentElement.remove()">×</button>
         `;

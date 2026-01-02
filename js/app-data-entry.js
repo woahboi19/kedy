@@ -38,19 +38,19 @@ function addSubjectRow() {
         </div>
         <div>
             <label>Soru</label>
-            <input type="number" name="total" min="1" required onchange="calculateEmpty('${rowId}')">
+            <input type="number" name="total" min="0" placeholder="0" onchange="calculateEmpty('${rowId}')" oninput="calculateEmpty('${rowId}')">
         </div>
         <div>
             <label>Doğru</label>
-            <input type="number" name="correct" min="0" required onchange="calculateEmpty('${rowId}')">
+            <input type="number" name="correct" min="0" placeholder="0" onchange="calculateEmpty('${rowId}')" oninput="calculateEmpty('${rowId}')">
         </div>
         <div>
             <label>Yanlış</label>
-            <input type="number" name="wrong" min="0" required onchange="calculateEmpty('${rowId}')">
+            <input type="number" name="wrong" min="0" placeholder="0" onchange="calculateEmpty('${rowId}')" oninput="calculateEmpty('${rowId}')">
         </div>
         <div>
             <label>Boş</label>
-            <input type="number" name="empty" id="empty-${rowId}" readonly style="background-color: #eee;">
+            <input type="number" name="empty" id="empty-${rowId}" readonly style="background-color: #eee;" value="0">
         </div>
         <button type="button" class="remove-btn" onclick="this.parentElement.remove()">×</button>
     `;
