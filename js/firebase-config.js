@@ -125,12 +125,16 @@ function getCurrentUserId() {
 // Load user nickname from Firebase
 async function loadUserNickname(uid) {
     try {
+        console.log('Loading nickname for UID:', uid);
         const snapshot = await usersRef.child(uid).once('value');
         const userData = snapshot.val();
+        console.log('User data from Firebase:', userData);
         if (userData && userData.nickname) {
             currentUserNickname = userData.nickname;
+            console.log('Nickname loaded:', currentUserNickname);
         } else {
             currentUserNickname = null;
+            console.log('No nickname found, using email');
         }
         return currentUserNickname;
     } catch (error) {
@@ -147,13 +151,16 @@ auth.onAuthStateChanged(async (user) => {
     currentUser = user;
     
     if (user) {
-        // Load user's nickname
+        console.log('User logged in:', user.email, 'UID:', user.uid);
+        // Load user's nickname first
         await loadUserNickname(user.uid);
+        // Then update UI with nickname
+        updateAuthUI();
     } else {
+        console.log('User logged out');
         currentUserNickname = null;
+        updateAuthUI();
     }
-    
-    updateAuthUI();
     
     if (!isFirebaseReady) {
         isFirebaseReady = true;
