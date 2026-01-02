@@ -20,6 +20,7 @@ function renderRecentEntries() {
         const questionTotal = exam.subjects.reduce((sum, sub) => sum + sub.total, 0);
         const percentage = questionTotal > 0 ? ((correctTotal / questionTotal) * 100).toFixed(1) : 0;
         const notesIcon = exam.notes ? ' 📝' : '';
+        const uploaderInfo = exam.uploadedByNickname ? ` • 👤 ${exam.uploadedByNickname}` : '';
         
         const div = document.createElement('div');
         div.className = 'entry-item';
@@ -30,7 +31,7 @@ function renderRecentEntries() {
                        ${selectedExams.has(exam.id) ? 'checked' : ''}>
                 <div class="entry-info">
                     <strong>${exam.examName}${notesIcon}</strong>
-                    <span class="entry-date">${exam.date} - ${exam.studentName}</span>
+                    <span class="entry-date">${exam.date} - ${exam.studentName}${uploaderInfo}</span>
                     <span class="entry-score">${percentage}% (${correctTotal}/${questionTotal})</span>
                 </div>
             `;
@@ -38,7 +39,7 @@ function renderRecentEntries() {
             div.innerHTML = `
                 <div class="entry-info">
                     <strong>${exam.examName}${notesIcon}</strong>
-                    <span class="entry-date">${exam.date} - ${exam.studentName}</span>
+                    <span class="entry-date">${exam.date} - ${exam.studentName}${uploaderInfo}</span>
                     <span class="entry-score">${percentage}% (${correctTotal}/${questionTotal})</span>
                 </div>
                 <div class="entry-actions">
@@ -83,13 +84,14 @@ function filterEntries() {
         const questionTotal = exam.subjects.reduce((sum, sub) => sum + sub.total, 0);
         const percentage = questionTotal > 0 ? ((correctTotal / questionTotal) * 100).toFixed(1) : 0;
         const notesIcon = exam.notes ? ' 📝' : '';
+        const uploaderInfo = exam.uploadedByNickname ? ` • 👤 ${exam.uploadedByNickname}` : '';
         
         const div = document.createElement('div');
         div.className = 'entry-item';
         div.innerHTML = `
             <div class="entry-info">
                 <strong>${exam.examName}${notesIcon}</strong>
-                <span class="entry-date">${exam.date} - ${exam.studentName}</span>
+                <span class="entry-date">${exam.date} - ${exam.studentName}${uploaderInfo}</span>
                 <span class="entry-score">${percentage}% (${correctTotal}/${questionTotal})</span>
             </div>
             <div class="entry-actions">

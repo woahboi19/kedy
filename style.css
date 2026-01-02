@@ -1231,6 +1231,20 @@ textarea {
     background: #95a5a6;
 }
 
+.auth-user-nickname {
+    font-size: 0.9rem;
+    color: #333;
+    font-weight: 500;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: help;
+    padding: 4px 8px;
+    background: #e8f4e8;
+    border-radius: 4px;
+}
+
 .auth-user-email {
     font-size: 0.85rem;
     color: #666;
@@ -1238,6 +1252,14 @@ textarea {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.auth-hint {
+    font-size: 0.85rem;
+    color: #888;
+    text-align: center;
+    margin-top: 15px;
+    font-style: italic;
 }
 
 .auth-btn {

@@ -24,9 +24,11 @@ const database = firebase.database();
 // Database references
 const examsRef = database.ref('exams');
 const goalsRef = database.ref('goals');
+const usersRef = database.ref('users');
 
 // Current user state
 let currentUser = null;
+let currentUserNickname = null;
 let isFirebaseReady = false;
 let dataLoadedFromFirebase = false;
 
@@ -110,12 +112,47 @@ function getCurrentUserEmail() {
     return currentUser ? currentUser.email : null;
 }
 
+// Get current user nickname
+function getCurrentUserNickname() {
+    return currentUserNickname || (currentUser ? currentUser.email : null);
+}
+
+// Get current user ID
+function getCurrentUserId() {
+    return currentUser ? currentUser.uid : null;
+}
+
+// Load user nickname from Firebase
+async function loadUserNickname(uid) {
+    try {
+        const snapshot = await usersRef.child(uid).once('value');
+        const userData = snapshot.val();
+        if (userData && userData.nickname) {
+            currentUserNickname = userData.nickname;
+        } else {
+            currentUserNickname = null;
+        }
+        return currentUserNickname;
+    } catch (error) {
+        console.error('Error loading nickname:', error);
+        return null;
+    }
+}
+
 // ===================================
 // AUTH STATE OBSERVER
 // ===================================
 
-auth.onAuthStateChanged((user) => {
+auth.onAuthStateChanged(async (user) => {
     currentUser = user;
+    
+    if (user) {
+        // Load user's nickname
+        await loadUserNickname(user.uid);
+    } else {
+        currentUserNickname = null;
+    }
+    
     updateAuthUI();
     
     if (!isFirebaseReady) {
@@ -129,16 +166,17 @@ auth.onAuthStateChanged((user) => {
 function updateAuthUI() {
     const loginBtn = document.getElementById('auth-login-btn');
     const logoutBtn = document.getElementById('auth-logout-btn');
-    const userEmail = document.getElementById('auth-user-email');
+    const userNickname = document.getElementById('auth-user-nickname');
     const authStatus = document.getElementById('auth-status');
     
     if (currentUser) {
         // User is logged in
         if (loginBtn) loginBtn.style.display = 'none';
         if (logoutBtn) logoutBtn.style.display = 'inline-block';
-        if (userEmail) {
-            userEmail.textContent = currentUser.email;
-            userEmail.style.display = 'inline';
+        if (userNickname) {
+            userNickname.textContent = currentUserNickname || currentUser.email;
+            userNickname.style.display = 'inline';
+            userNickname.title = currentUser.email;
         }
         if (authStatus) {
             authStatus.className = 'auth-status auth-status-logged-in';
@@ -151,9 +189,9 @@ function updateAuthUI() {
         // User is logged out
         if (loginBtn) loginBtn.style.display = 'inline-block';
         if (logoutBtn) logoutBtn.style.display = 'none';
-        if (userEmail) {
-            userEmail.textContent = '';
-            userEmail.style.display = 'none';
+        if (userNickname) {
+            userNickname.textContent = '';
+            userNickname.style.display = 'none';
         }
         if (authStatus) {
             authStatus.className = 'auth-status auth-status-logged-out';
@@ -396,11 +434,8 @@ function handleAuthSubmit(event, mode) {
         return;
     }
     
-    if (mode === 'login') {
-        loginWithEmail(email, password);
-    } else {
-        registerWithEmail(email, password);
-    }
+    // Only login is allowed now
+    loginWithEmail(email, password);
 }
 
 function switchAuthMode(mode) {
@@ -456,3 +491,5 @@ window.switchAuthMode = switchAuthMode;
 window.syncLocalToFirebase = syncLocalToFirebase;
 window.saveDataToFirebase = saveDataToFirebase;
 window.saveGoalsToFirebase = saveGoalsToFirebase;
+window.getCurrentUserNickname = getCurrentUserNickname;
+window.getCurrentUserId = getCurrentUserId;

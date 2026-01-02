@@ -135,6 +135,8 @@ function handleFormSubmit(e) {
     if (editingExamId) {
         const examIndex = exams.findIndex(e => e.id === editingExamId);
         if (examIndex !== -1) {
+            // Keep original uploader info when editing
+            const originalExam = exams[examIndex];
             exams[examIndex] = {
                 id: editingExamId,
                 gradeLevel,
@@ -142,7 +144,12 @@ function handleFormSubmit(e) {
                 examName,
                 date: examDate,
                 notes: examNotes,
-                subjects
+                subjects,
+                uploadedBy: originalExam.uploadedBy || null,
+                uploadedByNickname: originalExam.uploadedByNickname || null,
+                lastEditedBy: typeof getCurrentUserId === 'function' ? getCurrentUserId() : null,
+                lastEditedByNickname: typeof getCurrentUserNickname === 'function' ? getCurrentUserNickname() : null,
+                lastEditedAt: new Date().toISOString()
             };
         }
         cancelEdit();
@@ -155,7 +162,10 @@ function handleFormSubmit(e) {
             examName,
             date: examDate,
             notes: examNotes,
-            subjects
+            subjects,
+            uploadedBy: typeof getCurrentUserId === 'function' ? getCurrentUserId() : null,
+            uploadedByNickname: typeof getCurrentUserNickname === 'function' ? getCurrentUserNickname() : null,
+            uploadedAt: new Date().toISOString()
         };
         exams.push(newExam);
         alert('Sınav başarıyla kaydedildi!');

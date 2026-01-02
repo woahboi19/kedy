@@ -44,27 +44,7 @@
                     </div>
                     <button type="submit" class="primary-btn auth-submit-btn">Giriş Yap</button>
                 </form>
-                <p class="auth-switch">
-                    Hesabınız yok mu? <a href="#" onclick="switchAuthMode('register'); return false;">Kayıt Ol</a>
-                </p>
-            </div>
-            
-            <!-- Register Section -->
-            <div id="auth-register-section" style="display: none;">
-                <form onsubmit="handleAuthSubmit(event, 'register')">
-                    <div class="form-group">
-                        <label for="auth-email">E-posta</label>
-                        <input type="email" id="auth-email" required placeholder="ornek@okul.edu.tr">
-                    </div>
-                    <div class="form-group">
-                        <label for="auth-password">Şifre</label>
-                        <input type="password" id="auth-password" required placeholder="En az 6 karakter" minlength="6">
-                    </div>
-                    <button type="submit" class="primary-btn auth-submit-btn">Kayıt Ol</button>
-                </form>
-                <p class="auth-switch">
-                    Zaten hesabınız var mı? <a href="#" onclick="switchAuthMode('login'); return false;">Giriş Yap</a>
-                </p>
+                <p class="auth-hint">Hesap oluşturmak için yöneticinizle iletişime geçin.</p>
             </div>
         </div>
     </div>
@@ -76,7 +56,7 @@
             <!-- Auth UI -->
             <div class="auth-container">
                 <div id="auth-status" class="auth-status auth-status-logged-out" title="Giriş yapılmadı"></div>
-                <span id="auth-user-email" class="auth-user-email" style="display: none;"></span>
+                <span id="auth-user-nickname" class="auth-user-nickname" style="display: none;"></span>
                 <button id="auth-login-btn" onclick="openAuthModal()" class="auth-btn">🔐 Giriş</button>
                 <button id="auth-logout-btn" onclick="logout()" class="auth-btn auth-logout" style="display: none;">Çıkış</button>
             </div>
