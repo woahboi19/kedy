@@ -75,6 +75,11 @@ function importData(event) {
             let imported_count = 0;
             let invalid_count = 0;
             
+            // Use a Set for efficient duplicate checking.
+            // A signature is a unique string for each exam entry.
+            const existingSignatures = new Set(exams.map(e => `${e.studentName}|${e.examName}|${e.date}`));
+            const updates = {};
+
             imported.forEach(exam => {
                 // Validate required fields
                 if (!exam.studentName || !exam.examName || !exam.date || !exam.gradeLevel) {
@@ -82,18 +87,16 @@ function importData(event) {
                     invalid_count++;
                     return;
                 }
+                
+                const signature = `${exam.studentName}|${exam.examName}|${exam.date}`;
 
-                if (!exams.some(e => 
-                    e.studentName === exam.studentName && 
-                    e.examName === exam.examName && 
-                    e.date === exam.date
-                )) {
-                    // Sanitize and prepare data for manual entries
-                    if (!exam.id) exam.id = Date.now() + Math.random();
+                // Check for duplicates in existing data and within the imported file itself
+                if (!existingSignatures.has(signature)) {
+                    // Sanitize and prepare data for a new Firebase entry
                     if (!exam.subjects) exam.subjects = [];
                     
                     // Ensure subjects have correct numbers
-                    exam.subjects = exam.subjects.map(sub => {
+                    exam.subjects = (exam.subjects || []).map(sub => {
                         const total = parseInt(sub.total) || 0;
                         const correct = parseInt(sub.correct) || 0;
                         const wrong = parseInt(sub.wrong) || 0;
@@ -101,32 +104,34 @@ function importData(event) {
                         
                         if (isNaN(empty)) empty = total - (correct + wrong);
                         
-                        return {
-                            ...sub,
-                            total, correct, wrong, 
-                            empty: Math.max(0, empty)
-                        };
+                        return { ...sub, total, correct, wrong, empty: Math.max(0, empty) };
                     });
 
                     // Add upload metadata
                     if (!exam.uploadedAt) exam.uploadedAt = new Date().toISOString();
-                    if (typeof getCurrentUserId === 'function' && !exam.uploadedBy) {
-                        exam.uploadedBy = getCurrentUserId();
-                    }
-                    if (typeof getCurrentUserNickname === 'function' && !exam.uploadedByNickname) {
-                        exam.uploadedByNickname = getCurrentUserNickname();
-                    }
+                    if (typeof getCurrentUserId === 'function' && !exam.uploadedBy) exam.uploadedBy = getCurrentUserId();
+                    if (typeof getCurrentUserNickname === 'function' && !exam.uploadedByNickname) exam.uploadedByNickname = getCurrentUserNickname();
 
-                    exams.push(exam);
+                    // Generate a new unique ID from Firebase for the exam
+                    const newExamId = database.ref().child('exams').push().key;
+                    exam.id = newExamId;
+
+                    // Add the new exam to the batch update object
+                    updates[`/exams/${newExamId}`] = exam;
+                    
+                    // Add signature to set to prevent duplicates from the same file
+                    existingSignatures.add(signature);
                     imported_count++;
                 } else {
                     duplicates++;
                 }
             });
             
-            saveData();
-            renderRecentEntries();
-            updateGradeFilter();
+            // If there are new exams, perform a single batch update to Firebase.
+            // The .on('value') listener will then automatically update the UI.
+            if (Object.keys(updates).length > 0) {
+                database.ref().update(updates).catch(err => alert('❌ Veri yüklenirken hata: ' + err.message));
+            }
             
             let message = `✅ ${imported_count} sınav başarıyla içe aktarıldı!`;
             if (duplicates > 0) {
