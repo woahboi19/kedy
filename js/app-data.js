@@ -59,10 +59,16 @@ function importData(event) {
     const reader = new FileReader();
     reader.onload = function(e) {
         try {
-            const imported = JSON.parse(e.target.result);
+            const importedData = JSON.parse(e.target.result);
+            let imported;
             
-            if (!Array.isArray(imported)) {
-                throw new Error('Geçersiz dosya formatı');
+            // Allow importing a single exam object or an array of them
+            if (Array.isArray(importedData)) {
+                imported = importedData;
+            } else if (typeof importedData === 'object' && importedData !== null) {
+                imported = [importedData]; // Wrap single object in an array
+            } else {
+                throw new Error('Geçersiz dosya formatı. Dosya bir JSON dizisi veya tek bir JSON nesnesi olmalıdır.');
             }
             
             let duplicates = 0;
