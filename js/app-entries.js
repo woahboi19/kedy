@@ -2,63 +2,78 @@
 // ENTRIES LIST & MANAGEMENT
 // ===================================
 
-// Render Recent Entries
-function renderRecentEntries() {
+// Helper - Calculate exam stats
+function getExamStats(exam) {
+    const correctTotal = exam.subjects.reduce((sum, sub) => sum + sub.correct, 0);
+    const questionTotal = exam.subjects.reduce((sum, sub) => sum + sub.total, 0);
+    const percentage = questionTotal > 0 ? ((correctTotal / questionTotal) * 100).toFixed(1) : 0;
+    return { correctTotal, questionTotal, percentage };
+}
+
+// Helper - Render single entry item
+function createEntryItem(exam) {
+    const { percentage, correctTotal, questionTotal } = getExamStats(exam);
+    const notesIcon = exam.notes ? ' 📝' : '';
+    const uploaderInfo = exam.uploadedByNickname ? ` • 👤 ${exam.uploadedByNickname}` : '';
+    
+    const div = document.createElement('div');
+    div.className = 'entry-item';
+    
+    if (bulkMode) {
+        div.innerHTML = `
+            <input type="checkbox" class="bulk-checkbox" onchange="toggleExamSelection(${exam.id})" 
+                   ${selectedExams.has(exam.id) ? 'checked' : ''}>
+            <div class="entry-info">
+                <strong>${exam.examName}${notesIcon}</strong>
+                <span class="entry-date">${exam.date} - ${exam.studentName}${uploaderInfo}</span>
+                <span class="entry-score">${percentage}% (${correctTotal}/${questionTotal})</span>
+            </div>
+        `;
+    } else {
+        div.innerHTML = `
+            <div class="entry-info">
+                <strong>${exam.examName}${notesIcon}</strong>
+                <span class="entry-date">${exam.date} - ${exam.studentName}${uploaderInfo}</span>
+                <span class="entry-score">${percentage}% (${correctTotal}/${questionTotal})</span>
+            </div>
+            <div class="entry-actions">
+                <button onclick="editExam('${exam.id}')" class="action-btn edit-btn" title="Düzenle">✎</button>
+                <button onclick="deleteExam('${exam.id}')" class="action-btn delete-btn" title="Sil">🗑</button>
+            </div>
+        `;
+    }
+    
+    return div;
+}
+
+// Render entries to list
+function renderEntriesToList(examsList) {
     const list = document.getElementById('entries-list');
     if (!list) return;
     
     list.innerHTML = '';
     
-    if (exams.length === 0) {
+    if (examsList.length === 0) {
         list.innerHTML = '<p class="empty-state">Henüz kayıtlı sınav yok.</p>';
         return;
     }
     
-    // Show all entries (reversed)
-    exams.slice().reverse().forEach(exam => {
-        const correctTotal = exam.subjects.reduce((sum, sub) => sum + sub.correct, 0);
-        const questionTotal = exam.subjects.reduce((sum, sub) => sum + sub.total, 0);
-        const percentage = questionTotal > 0 ? ((correctTotal / questionTotal) * 100).toFixed(1) : 0;
-        const notesIcon = exam.notes ? ' 📝' : '';
-        const uploaderInfo = exam.uploadedByNickname ? ` • 👤 ${exam.uploadedByNickname}` : '';
-        
-        const div = document.createElement('div');
-        div.className = 'entry-item';
-        
-        if (bulkMode) {
-            div.innerHTML = `
-                <input type="checkbox" class="bulk-checkbox" onchange="toggleExamSelection(${exam.id})" 
-                       ${selectedExams.has(exam.id) ? 'checked' : ''}>
-                <div class="entry-info">
-                    <strong>${exam.examName}${notesIcon}</strong>
-                    <span class="entry-date">${exam.date} - ${exam.studentName}${uploaderInfo}</span>
-                    <span class="entry-score">${percentage}% (${correctTotal}/${questionTotal})</span>
-                </div>
-            `;
-        } else {
-            div.innerHTML = `
-                <div class="entry-info">
-                    <strong>${exam.examName}${notesIcon}</strong>
-                    <span class="entry-date">${exam.date} - ${exam.studentName}${uploaderInfo}</span>
-                    <span class="entry-score">${percentage}% (${correctTotal}/${questionTotal})</span>
-                </div>
-                <div class="entry-actions">
-                    <button onclick="editExam('${exam.id}')" class="action-btn edit-btn" title="Düzenle">✎</button>
-                    <button onclick="deleteExam('${exam.id}')" class="action-btn delete-btn" title="Sil">🗑</button>
-                </div>
-            `;
-        }
-        
-        list.appendChild(div);
+    examsList.slice().reverse().forEach(exam => {
+        list.appendChild(createEntryItem(exam));
     });
+}
+
+// Render Recent Entries
+function renderRecentEntries() {
+    renderEntriesToList(exams);
 }
 
 // Search/Filter Entries
 function filterEntries() {
     const searchInput = document.getElementById('entry-search');
     if (!searchInput) return;
+    
     const searchTerm = searchInput.value.toLowerCase();
-    const list = document.getElementById('entries-list');
     
     if (!searchTerm) {
         renderRecentEntries();
@@ -72,35 +87,7 @@ function filterEntries() {
         (exam.notes && exam.notes.toLowerCase().includes(searchTerm))
     );
     
-    list.innerHTML = '';
-    
-    if (filtered.length === 0) {
-        list.innerHTML = '<p class="empty-state">Arama sonucu bulunamadı.</p>';
-        return;
-    }
-    
-    filtered.slice().reverse().forEach(exam => {
-        const correctTotal = exam.subjects.reduce((sum, sub) => sum + sub.correct, 0);
-        const questionTotal = exam.subjects.reduce((sum, sub) => sum + sub.total, 0);
-        const percentage = questionTotal > 0 ? ((correctTotal / questionTotal) * 100).toFixed(1) : 0;
-        const notesIcon = exam.notes ? ' 📝' : '';
-        const uploaderInfo = exam.uploadedByNickname ? ` • 👤 ${exam.uploadedByNickname}` : '';
-        
-        const div = document.createElement('div');
-        div.className = 'entry-item';
-        div.innerHTML = `
-            <div class="entry-info">
-                <strong>${exam.examName}${notesIcon}</strong>
-                <span class="entry-date">${exam.date} - ${exam.studentName}${uploaderInfo}</span>
-                <span class="entry-score">${percentage}% (${correctTotal}/${questionTotal})</span>
-            </div>
-            <div class="entry-actions">
-                <button onclick="editExam('${exam.id}')" class="action-btn edit-btn" title="Düzenle">✎</button>
-                <button onclick="deleteExam('${exam.id}')" class="action-btn delete-btn" title="Sil">🗑</button>
-            </div>
-        `;
-        list.appendChild(div);
-    });
+    renderEntriesToList(filtered);
 }
 
 // Edit Exam
@@ -253,3 +240,5 @@ window.filterEntries = filterEntries;
 window.toggleBulkMode = toggleBulkMode;
 window.toggleExamSelection = toggleExamSelection;
 window.deleteSelected = deleteSelected;
+window.renderRecentEntries = renderRecentEntries;
+window.getExamStats = getExamStats;
