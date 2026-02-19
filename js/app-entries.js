@@ -6,13 +6,15 @@
 function getExamStats(exam) {
     const correctTotal = exam.subjects.reduce((sum, sub) => sum + sub.correct, 0);
     const questionTotal = exam.subjects.reduce((sum, sub) => sum + sub.total, 0);
+    const wrongTotal = exam.subjects.reduce((sum, sub) => sum + (sub.wrong || 0), 0);
+    const emptyTotal = exam.subjects.reduce((sum, sub) => sum + (sub.empty || 0), 0);
     const percentage = questionTotal > 0 ? ((correctTotal / questionTotal) * 100).toFixed(1) : 0;
-    return { correctTotal, questionTotal, percentage };
+    return { correctTotal, questionTotal, percentage, wrongTotal, emptyTotal };
 }
 
 // Helper - Render single entry item
 function createEntryItem(exam) {
-    const { percentage, correctTotal, questionTotal } = getExamStats(exam);
+    const { percentage, correctTotal, questionTotal, wrongTotal, emptyTotal } = getExamStats(exam);
     const notesIcon = exam.notes ? ' 📝' : '';
     const uploaderInfo = exam.uploadedByNickname ? ` • 👤 ${exam.uploadedByNickname}` : '';
     
@@ -26,7 +28,14 @@ function createEntryItem(exam) {
             <div class="entry-info">
                 <strong>${exam.examName}${notesIcon}</strong>
                 <span class="entry-date">${exam.date} - ${exam.studentName}${uploaderInfo}</span>
-                <span class="entry-score">${percentage}% (${correctTotal}/${questionTotal})</span>
+                <div class="entry-score">
+                    <span class="score-percent">${percentage}%</span>
+                    <span class="score-breakdown">
+                        <span class="badge badge-correct">✓ ${correctTotal}</span>
+                        <span class="badge badge-wrong">✗ ${wrongTotal}</span>
+                        <span class="badge badge-empty">○ ${emptyTotal}</span>
+                    </span>
+                </div>
             </div>
         `;
     } else {
@@ -34,7 +43,14 @@ function createEntryItem(exam) {
             <div class="entry-info">
                 <strong>${exam.examName}${notesIcon}</strong>
                 <span class="entry-date">${exam.date} - ${exam.studentName}${uploaderInfo}</span>
-                <span class="entry-score">${percentage}% (${correctTotal}/${questionTotal})</span>
+                <div class="entry-score">
+                    <span class="score-percent">${percentage}%</span>
+                    <span class="score-breakdown">
+                        <span class="badge badge-correct">✓ ${correctTotal}</span>
+                        <span class="badge badge-wrong">✗ ${wrongTotal}</span>
+                        <span class="badge badge-empty">○ ${emptyTotal}</span>
+                    </span>
+                </div>
             </div>
             <div class="entry-actions">
                 <button onclick="editExam('${exam.id}')" class="action-btn edit-btn" title="Düzenle">✎</button>

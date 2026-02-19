@@ -243,18 +243,25 @@ textarea {
 
 .entry-item {
     border-bottom: 1px solid var(--border-color);
-    padding: 10px 0;
+    padding: 12px 0;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    gap: 10px;
 }
 
 .entry-item:last-child {
     border-bottom: none;
 }
 
+.entry-info {
+    flex: 1;
+    min-width: 0;
+}
+
 .entry-info strong {
     display: block;
+    margin-bottom: 4px;
 }
 
 .entry-date {
@@ -409,15 +416,57 @@ textarea {
 }
 
 .entry-score {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.score-percent {
     display: block;
     font-weight: bold;
     color: var(--primary-color);
-    margin-top: 3px;
+    font-size: 1.1rem;
+}
+
+.score-breakdown {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.badge-correct {
+    background-color: rgba(46, 204, 113, 0.15);
+    color: #27ae60;
+    border: 1px solid #27ae60;
+}
+
+.badge-wrong {
+    background-color: rgba(231, 76, 60, 0.15);
+    color: #c0392b;
+    border: 1px solid #c0392b;
+}
+
+.badge-empty {
+    background-color: rgba(149, 165, 166, 0.15);
+    color: #7f8c8d;
+    border: 1px solid #95a5a6;
 }
 
 .entry-actions {
     display: flex;
     gap: 5px;
+    flex-shrink: 0;
 }
 
 .action-btn {
@@ -729,7 +778,7 @@ textarea {
     width: 20px !important;
     height: 20px;
     cursor: pointer;
-    margin-right: 10px;
+    flex-shrink: 0;
 }
 
 .danger-btn {
@@ -1005,6 +1054,15 @@ textarea {
     .quick-stat-card {
         flex-direction: column;
         text-align: center;
+    }
+    
+    .score-breakdown {
+        width: 100%;
+    }
+    
+    .entry-score {
+        flex-direction: column;
+        align-items: flex-start;
     }
     
     .bulk-actions {
