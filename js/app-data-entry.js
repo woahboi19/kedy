@@ -156,7 +156,7 @@ function handleFormSubmit(e) {
         alert('Sınav başarıyla güncellendi!');
     } else {
         const newExam = {
-            id: Date.now(),
+            id: 'exam_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
             gradeLevel,
             studentName,
             examName,

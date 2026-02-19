@@ -133,7 +133,11 @@ function importData(event) {
 
                     // Generate new ID if not present
                     if (!exam.id) {
-                        exam.id = Date.now() + Math.random();
+                        // Use a consistent string-based ID
+                        exam.id = 'exam_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    } else {
+                        // Ensure ID is string for consistency
+                        exam.id = String(exam.id);
                     }
 
                     // Add upload metadata
@@ -159,24 +163,41 @@ function importData(event) {
             
             // Save to localStorage and Firebase
             if (imported_count > 0) {
-                saveData(); // Save to localStorage
+                console.log('Saving', imported_count, 'exams to database...');
+                
+                // Save to localStorage first
+                saveData();
+                console.log('✅ Saved to localStorage');
+                
+                // Force UI update immediately
+                if (typeof renderRecentEntries === 'function') {
+                    setTimeout(() => renderRecentEntries(), 100);
+                }
+                if (typeof populateStudentDropdown === 'function') {
+                    setTimeout(() => populateStudentDropdown(), 100);
+                }
+                if (typeof updateQuickStats === 'function') {
+                    setTimeout(() => updateQuickStats(), 100);
+                }
+                if (typeof updateDashboard === 'function') {
+                    setTimeout(() => updateDashboard(), 100);
+                }
                 
                 // Also sync to Firebase if authenticated
                 if (typeof saveDataToFirebase === 'function') {
                     saveDataToFirebase().then(success => {
                         if (success) {
+                            console.log('✅ Synced to Firebase');
                             if (typeof showNotification === 'function') {
                                 showNotification('☁️ Veriler buluta yüklendi!', 'success');
                             }
+                        } else {
+                            console.warn('⚠️ Firebase sync had issues');
                         }
+                    }).catch(err => {
+                        console.error('Firebase sync error:', err);
                     });
                 }
-                
-                // Refresh UI
-                if (typeof renderRecentEntries === 'function') renderRecentEntries();
-                if (typeof populateStudentDropdown === 'function') populateStudentDropdown();
-                if (typeof updateQuickStats === 'function') updateQuickStats();
-                if (typeof updateDashboard === 'function') updateDashboard();
             }
             
             let message = `✅ ${imported_count} sınav başarıyla içe aktarıldı!`;
@@ -338,3 +359,15 @@ window.exportGoals = exportGoals;
 window.importGoals = importGoals;
 window.clearAllData = clearAllData;
 window.validateExamStructure = validateExamStructure;
+
+// Debug function to check data
+window.debugExams = function() {
+    console.log('=== EXAM DATA DEBUG ===');
+    console.log('Total exams:', exams.length);
+    console.log('localStorage exams:', JSON.parse(localStorage.getItem('studentExams') || '[]').length);
+    if (exams.length > 0) {
+        console.log('First exam:', exams[0]);
+    }
+    console.log('Firebase ready:', typeof isFirebaseReady !== 'undefined' ? isFirebaseReady : 'unknown');
+    console.log('Authenticated:', typeof isAuthenticated === 'function' ? isAuthenticated() : 'unknown');
+};

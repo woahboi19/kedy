@@ -265,31 +265,42 @@ function enableWriteActions(enabled) {
 
 // Load data from Firebase
 function loadDataFromFirebase() {
+    console.log('Setting up Firebase real-time listeners...');
+    
     // Listen for exams changes
     examsRef.on('value', (snapshot) => {
         const data = snapshot.val();
+        console.log('Firebase exams snapshot received:', data ? Object.keys(data).length + ' records' : 'empty');
+        
         if (data) {
-            exams = Object.values(data);
+            const examsArray = Object.values(data);
+            console.log('Converted to array:', examsArray.length, 'exams');
+            exams = examsArray;
         } else {
             exams = [];
+            console.log('No exams in Firebase, using empty array');
         }
         
         // Also save to localStorage as backup
         localStorage.setItem('studentExams', JSON.stringify(exams));
+        console.log('✅ Saved', exams.length, 'exams to localStorage');
         
         // Re-render UI if app is initialized
         if (typeof renderRecentEntries === 'function') {
+            console.log('Rendering entries...');
             renderRecentEntries();
-            populateStudentDropdown();
-            updateQuickStats();
-            updateDashboard();
         }
+        if (typeof populateStudentDropdown === 'function') populateStudentDropdown();
+        if (typeof updateQuickStats === 'function') updateQuickStats();
+        if (typeof updateDashboard === 'function') updateDashboard();
         
         dataLoadedFromFirebase = true;
     }, (error) => {
         console.error('Firebase read error:', error);
         // Fall back to localStorage
+        console.log('Falling back to localStorage...');
         exams = JSON.parse(localStorage.getItem('studentExams') || '[]');
+        console.log('Loaded', exams.length, 'exams from localStorage');
     });
     
     // Listen for goals changes

@@ -43,8 +43,8 @@ function renderRecentEntries() {
                     <span class="entry-score">${percentage}% (${correctTotal}/${questionTotal})</span>
                 </div>
                 <div class="entry-actions">
-                    <button onclick="editExam(${exam.id})" class="action-btn edit-btn" title="Düzenle">✎</button>
-                    <button onclick="deleteExam(${exam.id})" class="action-btn delete-btn" title="Sil">🗑</button>
+                    <button onclick="editExam('${exam.id}')" class="action-btn edit-btn" title="Düzenle">✎</button>
+                    <button onclick="deleteExam('${exam.id}')" class="action-btn delete-btn" title="Sil">🗑</button>
                 </div>
             `;
         }
@@ -95,8 +95,8 @@ function filterEntries() {
                 <span class="entry-score">${percentage}% (${correctTotal}/${questionTotal})</span>
             </div>
             <div class="entry-actions">
-                <button onclick="editExam(${exam.id})" class="action-btn edit-btn" title="Düzenle">✎</button>
-                <button onclick="deleteExam(${exam.id})" class="action-btn delete-btn" title="Sil">🗑</button>
+                <button onclick="editExam('${exam.id}')" class="action-btn edit-btn" title="Düzenle">✎</button>
+                <button onclick="deleteExam('${exam.id}')" class="action-btn delete-btn" title="Sil">🗑</button>
             </div>
         `;
         list.appendChild(div);
