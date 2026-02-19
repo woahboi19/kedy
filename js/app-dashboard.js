@@ -52,25 +52,31 @@ function updateSubjectDropdown() {
     if (!select) return;
     
     const currentVal = select.value;
-    
-    const allLessons = new Set();
+    // Determine whether to populate by lesson or by lesson-topic
+    const compareByTopic = document.getElementById('compareByTopic')?.checked;
+    const items = new Set();
     exams
         .filter(e => e.gradeLevel === currentGradeFilter)
         .forEach(exam => {
             exam.subjects.forEach(sub => {
-                if (sub.lesson) allLessons.add(sub.lesson);
+                if (compareByTopic) {
+                    const key = `${sub.lesson} - ${sub.topic || ''}`.trim();
+                    if (key) items.add(key);
+                } else {
+                    if (sub.lesson) items.add(sub.lesson);
+                }
             });
         });
-    
+
     // Build options HTML efficiently
-    const sortedLessons = [...allLessons].sort();
+    const sortedItems = [...items].sort();
     let optionsHTML = '<option value="overall">Genel Başarı</option>';
     let goalOptionsHTML = '<option value="">Ders Seç...</option>';
     
-    sortedLessons.forEach(lesson => {
-        const escapedLesson = lesson.replace(/"/g, '&quot;');
-        optionsHTML += `<option value="${escapedLesson}">${lesson}</option>`;
-        goalOptionsHTML += `<option value="${escapedLesson}">${lesson}</option>`;
+    sortedItems.forEach(item => {
+        const escaped = item.replace(/"/g, '&quot;');
+        optionsHTML += `<option value="${escaped}">${item}</option>`;
+        goalOptionsHTML += `<option value="${escaped}">${item}</option>`;
     });
     
     select.innerHTML = optionsHTML;
@@ -137,6 +143,9 @@ function updateDashboard() {
     const lessonFilterEl = document.getElementById('filterSubject');
     
     if (!studentFilterEl || !lessonFilterEl) return;
+
+    // Refresh subject dropdown in case compareByTopic toggle changed
+    updateSubjectDropdown();
     
     const studentFilter = studentFilterEl.value;
     const lessonFilter = lessonFilterEl.value;
@@ -316,16 +325,18 @@ function renderSubjectComparison(filteredExams, studentFilter) {
     const comparisonContainer = document.getElementById('subject-comparison');
     if (!comparisonContainer) return;
     
+    const compareByTopic = document.getElementById('compareByTopic')?.checked;
     const subjectStats = {};
-    
+
     filteredExams.forEach(exam => {
         exam.subjects.forEach(sub => {
-            if (!subjectStats[sub.lesson]) {
-                subjectStats[sub.lesson] = { correct: 0, total: 0, count: 0 };
+            const key = compareByTopic ? `${sub.lesson} - ${sub.topic || ''}` : sub.lesson || 'Diğer';
+            if (!subjectStats[key]) {
+                subjectStats[key] = { correct: 0, total: 0, count: 0 };
             }
-            subjectStats[sub.lesson].correct += sub.correct;
-            subjectStats[sub.lesson].total += sub.total;
-            subjectStats[sub.lesson].count++;
+            subjectStats[key].correct += parseInt(sub.correct) || 0;
+            subjectStats[key].total += parseInt(sub.total) || 0;
+            subjectStats[key].count++;
         });
     });
     
@@ -453,15 +464,17 @@ function renderRadarChart(filteredExams, studentFilter) {
         radarChartInstance = null;
     }
     
-    // Collect subject data
+    // Collect subject (or topic) data
+    const compareByTopic = document.getElementById('compareByTopic')?.checked;
     const subjectData = {};
     filteredExams.forEach(exam => {
         exam.subjects.forEach(sub => {
-            if (!subjectData[sub.lesson]) {
-                subjectData[sub.lesson] = { correct: 0, total: 0 };
+            const key = compareByTopic ? `${sub.lesson} - ${sub.topic || ''}` : sub.lesson || 'Diğer';
+            if (!subjectData[key]) {
+                subjectData[key] = { correct: 0, total: 0 };
             }
-            subjectData[sub.lesson].correct += sub.correct;
-            subjectData[sub.lesson].total += sub.total;
+            subjectData[key].correct += parseInt(sub.correct) || 0;
+            subjectData[key].total += parseInt(sub.total) || 0;
         });
     });
     
@@ -527,15 +540,17 @@ function renderBarChart(filteredExams, studentFilter) {
         barChartInstance = null;
     }
     
-    // Collect subject data
+    // Collect subject (or topic) data
+    const compareByTopic = document.getElementById('compareByTopic')?.checked;
     const subjectData = {};
     filteredExams.forEach(exam => {
         exam.subjects.forEach(sub => {
-            if (!subjectData[sub.lesson]) {
-                subjectData[sub.lesson] = { correct: 0, total: 0 };
+            const key = compareByTopic ? `${sub.lesson} - ${sub.topic || ''}` : sub.lesson || 'Diğer';
+            if (!subjectData[key]) {
+                subjectData[key] = { correct: 0, total: 0 };
             }
-            subjectData[sub.lesson].correct += sub.correct;
-            subjectData[sub.lesson].total += sub.total;
+            subjectData[key].correct += parseInt(sub.correct) || 0;
+            subjectData[key].total += parseInt(sub.total) || 0;
         });
     });
     
@@ -611,12 +626,16 @@ function renderHeatmap(filteredExams, studentFilter) {
         return;
     }
     
-    // Organize data by subject and exam
+    // Organize data by subject or topic and exam
+    const compareByTopic = document.getElementById('compareByTopic')?.checked;
     const subjects = new Set();
     filteredExams.forEach(exam => {
-        exam.subjects.forEach(sub => subjects.add(sub.lesson));
+        exam.subjects.forEach(sub => {
+            const key = compareByTopic ? `${sub.lesson} - ${sub.topic || ''}` : sub.lesson || 'Diğer';
+            subjects.add(key);
+        });
     });
-    
+
     const subjectList = [...subjects].sort();
     
     // Build heatmap
@@ -640,20 +659,28 @@ function renderHeatmap(filteredExams, studentFilter) {
         html += `<div class="heatmap-label">${subject}</div>`;
         
         filteredExams.forEach(exam => {
-            const subData = exam.subjects.find(s => s.lesson === subject);
-            if (subData) {
-                const percentage = subData.total > 0 ? 
-                    (subData.correct / subData.total) * 100 : 0;
-                
+            // Aggregate all subject rows that belong to this lesson/topic
+            let subs;
+            if (compareByTopic) {
+                subs = exam.subjects.filter(s => `${s.lesson} - ${s.topic || ''}` === subject);
+            } else {
+                subs = exam.subjects.filter(s => s.lesson === subject);
+            }
+            if (subs.length > 0) {
+                const total = subs.reduce((sum, s) => sum + (s.total || 0), 0);
+                const correct = subs.reduce((sum, s) => sum + (s.correct || 0), 0);
+                const percentage = total > 0 ? (correct / total) * 100 : 0;
+
                 let colorClass = 'perf-verypoor';
                 if (percentage >= 85) colorClass = 'perf-excellent';
                 else if (percentage >= 70) colorClass = 'perf-good';
                 else if (percentage >= 50) colorClass = 'perf-average';
                 else if (percentage >= 30) colorClass = 'perf-poor';
-                
-                html += `<div class="heatmap-cell ${colorClass}" title="${subject}: ${percentage.toFixed(1)}%">
+
+                // Show combined correct/total; include topic count in tooltip
+                html += `<div class="heatmap-cell ${colorClass}" title="${subject}: ${percentage.toFixed(1)}% (${correct}/${total}) - ${subs.length} konu">
                     <div class="heatmap-score">${percentage.toFixed(0)}%</div>
-                    <div class="heatmap-detail">${subData.correct}/${subData.total}</div>
+                    <div class="heatmap-detail">${correct}/${total}</div>
                 </div>`;
             } else {
                 html += '<div class="heatmap-cell" style="background: #ecf0f1; color: #95a5a6;">-</div>';

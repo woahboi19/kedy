@@ -21,11 +21,11 @@ function createEntryItem(exam) {
     const div = document.createElement('div');
     div.className = 'entry-item';
     
-    if (bulkMode) {
+        if (bulkMode) {
         div.innerHTML = `
-            <input type="checkbox" class="bulk-checkbox" onchange="toggleExamSelection(${exam.id})" 
+            <input type="checkbox" class="bulk-checkbox" onchange="toggleExamSelection('${exam.id}')" 
                    ${selectedExams.has(exam.id) ? 'checked' : ''}>
-            <div class="entry-info">
+                <div class="entry-info">
                 <strong>${exam.examName}${notesIcon}</strong>
                 <span class="entry-date">${exam.date} - ${exam.studentName}${uploaderInfo}</span>
                 <div class="entry-score">
@@ -38,7 +38,7 @@ function createEntryItem(exam) {
                 </div>
             </div>
         `;
-    } else {
+        } else {
         div.innerHTML = `
             <div class="entry-info">
                 <strong>${exam.examName}${notesIcon}</strong>

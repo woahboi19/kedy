@@ -221,6 +221,13 @@
                     </select>
                 </div>
                 <div class="form-group">
+                    <label for="compareByTopic">Karşılaştırma</label>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <input type="checkbox" id="compareByTopic" onchange="updateDashboard()">
+                        <label for="compareByTopic" style="margin:0;cursor:pointer;">Konu Bazlı</label>
+                    </div>
+                </div>
+                <div class="form-group">
                     <label for="dateRange">Zaman Aralığı</label>
                     <select id="dateRange" onchange="handleDateRangeChange()">
                         <option value="all">Tüm Zamanlar</option>
