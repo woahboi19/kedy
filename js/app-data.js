@@ -2,6 +2,13 @@
 // DATA MANAGEMENT (Export/Import)
 // ===================================
 
+// Validate exam object structure
+function validateExamStructure(exam) {
+    const hasRequiredFields = exam.studentName && exam.examName && exam.date && exam.gradeLevel;
+    const hasValidSubjects = Array.isArray(exam.subjects) && exam.subjects.length > 0;
+    return hasRequiredFields && hasValidSubjects;
+}
+
 // Download Template for Manual Entry
 function downloadTemplate() {
     const template = [
@@ -56,6 +63,18 @@ function importData(event) {
     const file = event.target.files[0];
     if (!file) return;
     
+    // Check authentication first
+    if (typeof isAuthenticated === 'function' && !isAuthenticated()) {
+        if (typeof showNotification === 'function') {
+            showNotification('⚠️ Verileri yüklemek için giriş yapın!', 'warning');
+        } else {
+            alert('⚠️ Verileri yüklemek için giriş yapın!');
+        }
+        if (typeof openAuthModal === 'function') openAuthModal();
+        event.target.value = '';
+        return;
+    }
+    
     const reader = new FileReader();
     reader.onload = function(e) {
         try {
@@ -75,10 +94,8 @@ function importData(event) {
             let imported_count = 0;
             let invalid_count = 0;
             
-            // Use a Set for efficient duplicate checking.
-            // A signature is a unique string for each exam entry.
+            // Use a Set for efficient duplicate checking
             const existingSignatures = new Set(exams.map(e => `${e.studentName}|${e.examName}|${e.date}`));
-            const updates = {};
 
             imported.forEach(exam => {
                 // Validate required fields
@@ -90,9 +107,9 @@ function importData(event) {
                 
                 const signature = `${exam.studentName}|${exam.examName}|${exam.date}`;
 
-                // Check for duplicates in existing data and within the imported file itself
+                // Check for duplicates in existing data
                 if (!existingSignatures.has(signature)) {
-                    // Sanitize and prepare data for a new Firebase entry
+                    // Sanitize and prepare data
                     if (!exam.subjects) exam.subjects = [];
                     
                     // Ensure subjects have correct numbers
@@ -104,20 +121,33 @@ function importData(event) {
                         
                         if (isNaN(empty)) empty = total - (correct + wrong);
                         
-                        return { ...sub, total, correct, wrong, empty: Math.max(0, empty) };
+                        return { 
+                            lesson: sub.lesson || '',
+                            topic: sub.topic || '',
+                            total, 
+                            correct, 
+                            wrong, 
+                            empty: Math.max(0, empty) 
+                        };
                     });
+
+                    // Generate new ID if not present
+                    if (!exam.id) {
+                        exam.id = Date.now() + Math.random();
+                    }
 
                     // Add upload metadata
                     if (!exam.uploadedAt) exam.uploadedAt = new Date().toISOString();
-                    if (typeof getCurrentUserId === 'function' && !exam.uploadedBy) exam.uploadedBy = getCurrentUserId();
-                    if (typeof getCurrentUserNickname === 'function' && !exam.uploadedByNickname) exam.uploadedByNickname = getCurrentUserNickname();
+                    if (typeof getCurrentUserId === 'function' && !exam.uploadedBy) {
+                        exam.uploadedBy = getCurrentUserId();
+                    }
+                    if (typeof getCurrentUserNickname === 'function' && !exam.uploadedByNickname) {
+                        exam.uploadedByNickname = getCurrentUserNickname();
+                    }
 
-                    // Generate a new unique ID from Firebase for the exam
-                    const newExamId = database.ref().child('exams').push().key;
-                    exam.id = newExamId;
-
-                    // Add the new exam to the batch update object
-                    updates[`/exams/${newExamId}`] = exam;
+                    // Add the new exam to exams array
+                    exams.push(exam);
+                    console.log('✅ Imported exam:', exam.studentName, '-', exam.examName);
                     
                     // Add signature to set to prevent duplicates from the same file
                     existingSignatures.add(signature);
@@ -127,10 +157,26 @@ function importData(event) {
                 }
             });
             
-            // If there are new exams, perform a single batch update to Firebase.
-            // The .on('value') listener will then automatically update the UI.
-            if (Object.keys(updates).length > 0) {
-                database.ref().update(updates).catch(err => alert('❌ Veri yüklenirken hata: ' + err.message));
+            // Save to localStorage and Firebase
+            if (imported_count > 0) {
+                saveData(); // Save to localStorage
+                
+                // Also sync to Firebase if authenticated
+                if (typeof saveDataToFirebase === 'function') {
+                    saveDataToFirebase().then(success => {
+                        if (success) {
+                            if (typeof showNotification === 'function') {
+                                showNotification('☁️ Veriler buluta yüklendi!', 'success');
+                            }
+                        }
+                    });
+                }
+                
+                // Refresh UI
+                if (typeof renderRecentEntries === 'function') renderRecentEntries();
+                if (typeof populateStudentDropdown === 'function') populateStudentDropdown();
+                if (typeof updateQuickStats === 'function') updateQuickStats();
+                if (typeof updateDashboard === 'function') updateDashboard();
             }
             
             let message = `✅ ${imported_count} sınav başarıyla içe aktarıldı!`;
@@ -138,13 +184,24 @@ function importData(event) {
                 message += `\n⚠️ ${duplicates} tekrarlayan kayıt atlandı.`;
             }
             if (invalid_count > 0) {
-                message += `\n❌ ${invalid_count} kayıt eksik bilgi (örn. Sınav Türü) nedeniyle atlandı.`;
+                message += `\n❌ ${invalid_count} kayıt eksik bilgi nedeniyle atlandı.`;
             }
-            alert(message);
+            
+            if (typeof showNotification === 'function') {
+                showNotification(message, imported_count > 0 ? 'success' : 'warning');
+            } else {
+                alert(message);
+            }
             
             event.target.value = '';
         } catch (err) {
-            alert('❌ Dosya yüklenirken hata oluştu: ' + err.message);
+            console.error('Import error:', err);
+            if (typeof showNotification === 'function') {
+                showNotification('❌ Dosya yüklenirken hata: ' + err.message, 'error');
+            } else {
+                alert('❌ Dosya yüklenirken hata: ' + err.message);
+            }
+            event.target.value = '';
         }
     };
     reader.readAsText(file);
@@ -170,23 +227,62 @@ function importGoals(event) {
     const file = event.target.files[0];
     if (!file) return;
     
+    // Check authentication first
+    if (typeof isAuthenticated === 'function' && !isAuthenticated()) {
+        if (typeof showNotification === 'function') {
+            showNotification('⚠️ Hedefleri yüklemek için giriş yapın!', 'warning');
+        } else {
+            alert('⚠️ Hedefleri yüklemek için giriş yapın!');
+        }
+        if (typeof openAuthModal === 'function') openAuthModal();
+        event.target.value = '';
+        return;
+    }
+    
     const reader = new FileReader();
     reader.onload = function(e) {
         try {
             const imported = JSON.parse(e.target.result);
             
             if (typeof imported !== 'object' || imported === null || Array.isArray(imported)) {
-                throw new Error('Geçersiz dosya formatı');
+                throw new Error('Geçersiz dosya formatı. Hedefler bir JSON nesnesi olmalıdır.');
             }
             
+            // Merge with existing goals
             studentGoals = { ...studentGoals, ...imported };
-            saveGoals();
-            renderGoals();
             
-            alert(`✅ ${Object.keys(imported).length} hedef başarıyla içe aktarıldı!`);
+            // Save to localStorage and Firebase
+            saveGoals(); // Save to localStorage
+            
+            // Also sync to Firebase if authenticated
+            if (typeof saveGoalsToFirebase === 'function') {
+                saveGoalsToFirebase().then(success => {
+                    if (success) {
+                        if (typeof showNotification === 'function') {
+                            showNotification('☁️ Hedefler buluta yüklendi!', 'success');
+                        }
+                    }
+                });
+            }
+            
+            // Refresh UI
+            if (typeof renderGoals === 'function') renderGoals();
+            if (typeof updateDashboard === 'function') updateDashboard();
+            
+            if (typeof showNotification === 'function') {
+                showNotification(`✅ ${Object.keys(imported).length} hedef başarıyla içe aktarıldı!`, 'success');
+            } else {
+                alert(`✅ ${Object.keys(imported).length} hedef başarıyla içe aktarıldı!`);
+            }
             event.target.value = '';
         } catch (err) {
-            alert('❌ Dosya yüklenirken hata oluştu: ' + err.message);
+            console.error('Goals import error:', err);
+            if (typeof showNotification === 'function') {
+                showNotification('❌ Dosya yüklenirken hata: ' + err.message, 'error');
+            } else {
+                alert('❌ Dosya yüklenirken hata: ' + err.message);
+            }
+            event.target.value = '';
         }
     };
     reader.readAsText(file);
@@ -241,3 +337,4 @@ window.importData = importData;
 window.exportGoals = exportGoals;
 window.importGoals = importGoals;
 window.clearAllData = clearAllData;
+window.validateExamStructure = validateExamStructure;
