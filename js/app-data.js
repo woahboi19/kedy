@@ -2,6 +2,40 @@
 // DATA MANAGEMENT (Export/Import)
 // ===================================
 
+// Download Template for Manual Entry
+function downloadTemplate() {
+    const template = [
+        {
+            "studentName": "Öğrenci Adı Soyadı",
+            "examName": "Deneme Sınavı 1",
+            "date": new Date().toISOString().split('T')[0],
+            "gradeLevel": "Lise Hazırlık",
+            "notes": "Sınav hakkında notlar...",
+            "subjects": [
+                {
+                    "lesson": "Matematik",
+                    "topic": "Üslü Sayılar",
+                    "correct": 15,
+                    "wrong": 2,
+                    "empty": 3,
+                    "total": 20
+                }
+            ]
+        }
+    ];
+    
+    const dataStr = JSON.stringify(template, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `sinav-sablonu.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
 // Export Data
 function exportData() {
     const dataStr = JSON.stringify(exams, null, 2);
@@ -33,13 +67,50 @@ function importData(event) {
             
             let duplicates = 0;
             let imported_count = 0;
+            let invalid_count = 0;
             
             imported.forEach(exam => {
+                // Validate required fields
+                if (!exam.studentName || !exam.examName || !exam.date || !exam.gradeLevel) {
+                    console.warn('Skipping invalid entry:', exam);
+                    invalid_count++;
+                    return;
+                }
+
                 if (!exams.some(e => 
                     e.studentName === exam.studentName && 
                     e.examName === exam.examName && 
                     e.date === exam.date
                 )) {
+                    // Sanitize and prepare data for manual entries
+                    if (!exam.id) exam.id = Date.now() + Math.random();
+                    if (!exam.subjects) exam.subjects = [];
+                    
+                    // Ensure subjects have correct numbers
+                    exam.subjects = exam.subjects.map(sub => {
+                        const total = parseInt(sub.total) || 0;
+                        const correct = parseInt(sub.correct) || 0;
+                        const wrong = parseInt(sub.wrong) || 0;
+                        let empty = parseInt(sub.empty);
+                        
+                        if (isNaN(empty)) empty = total - (correct + wrong);
+                        
+                        return {
+                            ...sub,
+                            total, correct, wrong, 
+                            empty: Math.max(0, empty)
+                        };
+                    });
+
+                    // Add upload metadata
+                    if (!exam.uploadedAt) exam.uploadedAt = new Date().toISOString();
+                    if (typeof getCurrentUserId === 'function' && !exam.uploadedBy) {
+                        exam.uploadedBy = getCurrentUserId();
+                    }
+                    if (typeof getCurrentUserNickname === 'function' && !exam.uploadedByNickname) {
+                        exam.uploadedByNickname = getCurrentUserNickname();
+                    }
+
                     exams.push(exam);
                     imported_count++;
                 } else {
@@ -54,6 +125,9 @@ function importData(event) {
             let message = `✅ ${imported_count} sınav başarıyla içe aktarıldı!`;
             if (duplicates > 0) {
                 message += `\n⚠️ ${duplicates} tekrarlayan kayıt atlandı.`;
+            }
+            if (invalid_count > 0) {
+                message += `\n❌ ${invalid_count} kayıt eksik bilgi (örn. Sınav Türü) nedeniyle atlandı.`;
             }
             alert(message);
             
@@ -150,6 +224,7 @@ function clearAllData() {
 }
 
 // Global exports
+window.downloadTemplate = downloadTemplate;
 window.exportData = exportData;
 window.importData = importData;
 window.exportGoals = exportGoals;
